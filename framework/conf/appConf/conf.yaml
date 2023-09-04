@@ -1,0 +1,210 @@
+models:
+  modelContainer:
+    mymodel:
+      source_directory: source_directory_root_level
+      name: model_name
+      registry:
+        ModelPackageGroupName: ""
+        ModelPackageGroupDescription: ""
+        ModelApprovalStatus: ""
+        ModelRepack: ""
+        InferenceSpecification:
+          SupportedTransformInstanceTypes:
+            - ml.m5.2xlarge
+            - OTHER.OPTIONS
+          SupportedRealtimeInferenceInstanceType:
+            - ml.m5.2xlarge
+            - OTHER.OPTIONS
+          SupportedContentTypes:
+            - application/json
+          SupportedResponseMIMETypes:
+            - application/json
+          image_uri: &modelImage "ECR_MODEL_IMAGE"
+          MetadataProperties:
+            - Test
+      metrics:
+        ModelQuality:
+          Statistics:
+            ContentType: application/json
+        channels:
+          train:
+            location:
+              activeLocation: s3
+              s3BucketName: ""
+              evaluateBucketPrefix: ""
+              evaluateInputLocalFilepath: ""
+              inputBucketPrefix: prefix/to/input
+              content_type: text/csv
+            dataFiles:
+              - fileName: data_1.csv
+              - fileName: s3://bucket/fullt/path/data_2.csv
+        sagemaker:
+          image_uri: *modelImage
+          base_job_name: ""
+          entry_point: ""
+          instance_count: ""
+          instance_type: ""
+          strategy: ""
+          assemble_with: ""
+          join_source: ""
+          split_type: ""
+          content_type: ""
+          max_payload: ""
+          volume_size_in_gb: ""
+          max_runtime_in_seconds: ""
+          s3_data_type: ""
+          s3_input_mode: ""
+          s3_data_distribution_type: ""
+          tags:
+            - Key: key1
+              Value: value1
+            - Key: key2
+              Value: value2
+          env:
+            key: value
+            key2: value2
+      preprocess:
+        instance_type: ""
+        instance_count: ""
+        volume_size_in_gb: 50
+        max_runtime_seconds: 3000
+        image_uri: ""
+        entry_point: ""
+        base_job_name: ""
+        channels:
+          train:
+              s3BucketName: ""
+              inputBucketPrefix: prefix/to/input
+              outputBucketPrefix: prefix/to/output
+            dataFiles:
+              - sourceName: data_1
+                fileName: data_1.csv
+              - sourceName: data_2
+                fileName: s3://bucket/fullt/path/data_2.csv
+          tags:
+            - Key: key1
+              Value: value1
+            - Key: key2
+              Value: value2
+          max_run_time_in_seconds: 3600
+          env:
+            key: value
+            key2: value2
+      train:
+        instance_type: ""
+        instance_count: ""
+        output_path: s3://bucket/path/to/output
+        base_image_uri: *modelImage
+        entry_point: ""
+        base_job_name: ""
+        volume_size_in_gb: 50
+        max_runtime_seconds: 3000
+        hyperparameters:
+          parameters: value
+          parameters2: value2
+        channels:
+          train:
+            location:
+              activeLocation: s3
+              s3BucketName: ""
+              inputBucketPrefix: prefix/to/input
+              content_type: text/csv
+            dataFiles:
+              - fileName: data_1.csv
+              - fileName: s3://bucket/fullt/path/data_2.csv
+        tags:
+          - Key: key1
+            Value: value1
+          - Key: key2
+            Value: value2
+        env:
+          key: value
+          key2: value2
+      tune:
+        base_job_name: ""
+        image_uri: *modelImage
+        strategy: ""
+        objective_metric_name: ""
+        hyperparameter_ranges: ""
+        metric_definitions: ""
+        objective_type: ""
+        max_parallel_jobs: ""
+        max_runtime_in_seconds: ""
+        tags:
+          - Key: key1
+            Value: value1
+          - Key: key2
+            Value: value2
+        early_stopping_type: ""
+        random_seed: ""
+      transform:
+        channels:
+          train:
+            location:
+              activeLocation: s3
+              s3BucketName: ""
+              evaluateBucketPrefix: ""
+              evaluateInputLocalFilepath: ""
+              inputBucketPrefix: prefix/to/input
+              content_type: text/csv
+            dataFiles:
+              - fileName: data_1.csv
+              - fileName: s3://bucket/fullt/path/data_2.csv
+        sagemaker:
+          image_uri: *modelImage
+          base_job_name: ""
+          entry_point: ""
+          instance_count: ""
+          instance_type: ""
+          strategy: ""
+          assemble_with: ""
+          join_source: ""
+          split_type: ""
+          content_type: ""
+          max_payload: ""
+          volume_size_in_gb: ""
+          max_runtime_in_seconds: ""
+          s3_data_type: ""
+          s3_input_mode: ""
+          s3_data_distribution_type: ""
+          tags:
+            - Key: key1
+              Value: value1
+            - Key: key2
+              Value: value2
+          env:
+            key: value
+            key2: value2
+  sagemakerPipeline:
+    pipelineName: ""
+    models:
+      mymodel:
+        steps:
+          - step_name: mymodel-Preprocessing
+            step_class: preprocessing
+            chain_input_source_steps:
+              - upstream-model-source-steps-#
+            enable_cache: ""
+          - step_name: mymodel-Training
+            step_class: training
+            chain_input_source_steps:
+              - upstream-model-source-steps-#
+            enable_cache: ""
+          - step_name: mymodel-CreateModel
+            step_class: createmodel
+          - step_name: mymodel-Transform
+            step_class: transform
+            chain_input_source_steps:
+              - upstream-model-source-steps-#
+            chain_input_additional_prefix: ""
+            enable_cache: ""
+          - step_name: mymodel-Metrics
+            step_class: metrics
+            chain_input_source_steps:
+              - upstream-model-source-steps-#
+            chain_input_additional_prefix: ""
+            enable_cache: ""
+          - step_name: mymodel-Registry
+            step_class: registermodel
+    dependencies:
+      - step1 >> step2 >> ...
