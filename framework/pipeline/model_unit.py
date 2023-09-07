@@ -80,7 +80,7 @@ class ModelUnit:
             elif step_class == "Metrics":
                 if transform_step is None:
                     raise Exception("A transform step is required to create a model metrics step.")
-                metrics_step = self.sagemaker_model_metrics(step_config, transform_step)
+                metrics_step = self.sagemaker_model_metrics(step_config)
                 add_step = metrics_step
             elif step_class == "RegisterModel":
                 if train_step is None:
@@ -161,10 +161,10 @@ class ModelUnit:
         )
         return transform_step
     
-    def sagemaker_model_metrics(self, step_config: dict, transform_step: TransformStep) -> ProcessingStep:
+    def sagemaker_model_metrics(self, step_config: dict) -> ProcessingStep:
         
-        model_metric_service = ModelMetricsService(self.config, self.model_name)
-        model_metric_args = model_metric_service.calculate_model_metrics(transform_step)
+        model_metric_service = ModelMetricsService(self.config, self.model_name, step_config, self.model_step_dict)
+        model_metric_args = model_metric_service.calculate_model_metrics()
 
         cache_config = CacheConfig(enable_caching=get_cache_flag(step_config), expire_after="10d")
         evaluation_report = PropertyFile(

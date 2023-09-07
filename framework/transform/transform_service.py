@@ -162,6 +162,14 @@ class TransformService:
         ----------
         - SageMaker Processing Inputs list
         """
+        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.transform.channels", "train")
+        if isinstance(channels_conf, str):
+            channel_name = channels_conf
+        else:
+            if len(channels_conf.keys()) != 1:
+                raise Exception("Transform step can only have one channel.")
+            channel_name = channels_conf.keys()[0]
+        
         dynamic_processing_input = []
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])
         chain_input_additional_prefix = self.step_config.get("chain_input_additional_prefix", "")
@@ -175,8 +183,9 @@ class TransformService:
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
                     steps_dict=self.model_step_dict,
+                    source_output_name=channel_name,
                 )
-            
+                
                 input_data_file_s3path = Join("/", [chain_input_path, chain_input_additional_prefix])
 
         elif len(chain_input_source_step) == 0:
@@ -270,12 +279,20 @@ class TransformService:
 
         transform_data = self.config.get(f"models.modelContainer.{self.model_name}.transform")
         sagemaker_config = self._args()
+        
+        if self._get_chain_input():
+            input_data_file_s3path = self._get_chain_input()
+            output_data_file_s3path = None
+        else:
+            input_data_file_s3path, output_data_file_s3path = self._get_train_inputs_outputs(
+                transform_data
+            )
+            
+#         input_data_file_s3path, output_data_file_s3path = self._get_train_inputs_outputs(
+#             transform_data
+#         )
 
-        input_data_file_s3path, output_data_file_s3path = self._get_train_inputs_outputs(
-            transform_data
-        )
-
-        input_data_file_s3path =self._get_chain_input() if self._get_chain_input() else input_data_file_s3path
+#         input_data_file_s3path =self._get_chain_input() if self._get_chain_input() else input_data_file_s3path
 
         step_transform_args = self._run_batch_transform(
             input_data=input_data_file_s3path,

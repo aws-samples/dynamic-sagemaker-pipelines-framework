@@ -189,8 +189,6 @@ class TrainingService:
                     source_output_name= channel
                 )
 
-
-            
                 training_input = TrainingInput(
                         s3_data=chain_input_path,
                         content_type=content_type,

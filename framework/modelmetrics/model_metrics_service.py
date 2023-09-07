@@ -29,7 +29,8 @@ from sagemaker.processing import (
     RunArgs,
 )
 from sagemaker.workflow.pipeline_context import PipelineSession
-from sagemaker.workflow.steps import TransformStep
+from pipeline.helper import get_chain_input_file
+from pyhocon.config_tree import ConfigTree
 
 # Import Custom libraries
 from utilities.logger import Logger
@@ -50,7 +51,7 @@ class ModelMetricsService:
     Create an Evaluate function to generate the model metrcis
     """
 
-    def __init__(self, config: dict, model_name: str) -> "ModelMetricsService":
+    def __init__(self, config: dict, model_name: str, step_config: dict, model_step_dict: dict) -> "ModelMetricsService":
         """
         Initialization method to Create ModelMetricsService
 
@@ -61,6 +62,8 @@ class ModelMetricsService:
         """
         self.config = config
         self.model_name = model_name
+        self.step_config = step_config
+        self.model_step_dict = model_step_dict
         self.logger = Logger()
 
     def _get_pipeline_session(self) -> PipelineSession:
@@ -93,7 +96,7 @@ class ModelMetricsService:
         args = dict(
             image_uri=conf.get("image_uri"),
             entry_point=conf.get("entry_point"),
-            base_job_name=conf.get("base_job_name", "default-metrics-base-job-name"),
+            base_job_name=conf.get("base_job_name"),
             instance_count=conf.get("instance_count", 1),
             instance_type=conf.get("instance_type", "ml.m5.2xlarge"),
             strategy=conf.get("strategy", "SingleRecord"),
@@ -131,7 +134,7 @@ class ModelMetricsService:
         for channel in conf.get("channels", {}).keys(): input_files_list.append(conf.get(f"channels.{channel}.dataFiles", [])[0])
         return input_files_list
     
-    def _get_static_input(self):
+    def _get_static_input(self, input_local_filepath):
         """
         Method to retreive SageMaker static inputs
 
@@ -143,58 +146,85 @@ class ModelMetricsService:
         # parse main conf dictionary
         # modelContainer is the key attribute where all models have been allocated.
 
-
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
-        
-        # Get the total number of input files
-        input_files_list = self._get_static_input_list()
-
         static_inputs = []
-        input_local_filepath = "/opt/ml/processing/input/"
+        
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        if isinstance(conf.get("channels", {}), ConfigTree):   
+            # Get the total number of input files
+            input_files_list = self._get_static_input_list()
+            if len(input_files_list) >= 7:
+                raise Exception("Static inputs for metrics should not exceed 7")
+            for file in input_files_list:
+                if file.get("fileName").startswith("s3://"):
+                    _source = file.get("fileName")
+                else:
+                    bucket = conf.get("channels.train.s3Bucket")
+                    input_prefix = conf.get("channels.train.s3InputPrefix", "")
+                    _source = os.path.join(bucket, input_prefix, file.get("fileName"))
 
-        for file in input_files_list:
-            if file.get("fileName").startswith("s3://"):
-                _source = file.get("fileName")
-            else:
-                bucket = conf.get("channels.train.s3Bucket")
-                input_prefix = conf.get("channels.train.s3InputPrefix", "")
-                _source = os.path.join(bucket, input_prefix, file.get("fileName"))
-            
-            temp = ProcessingInput(
-                    input_name=file.get("sourceName",""),
-                    source=_source,
-                    destination=os.path.join(input_local_filepath, file.get("sourceName", "")),
-                    s3_data_distribution_type=conf.get("s3_data_distribution_type", "FullyReplicated"),
-                )
-
-            static_inputs.append(temp)
+                temp = ProcessingInput(
+                        input_name=file.get("sourceName",""),
+                        source=_source,
+                        destination=os.path.join(input_local_filepath, file.get("sourceName", "")),
+                        s3_data_distribution_type=conf.get("s3_data_distribution_type", "FullyReplicated"),
+                    )
+                static_inputs.append(temp)
             
         return static_inputs
+    
+    def _get_chain_input(self, input_local_filepath):
+        """
+        Method to retreive SageMaker chain inputs
 
+        Returns:
+        ----------
+        - SageMaker Processing Inputs list
+        """
+        dynamic_inputs = []
+        chain_input_source_step = self.step_config.get("chain_input_source_step", [])
+        
+        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate.channels", "train")
+        if isinstance(channels_conf, str):
+            # no datafile input
+            channel_name = channels_conf
+        else:
+            # find datafile input
+            if len(channels_conf.keys()) != 1:
+                raise Exception("Evaluate step can only have one channel.")
+            channel_name = list(channels_conf.keys())[0]
+
+        for source_step_name in chain_input_source_step:
+            chain_input_path = get_chain_input_file(
+                source_step_name=source_step_name,
+                steps_dict=self.model_step_dict,
+                source_output_name=channel_name,
+            )
+        
+            temp = ProcessingInput(
+                input_name=f"{source_step_name}-input",
+                source=chain_input_path,
+                destination=os.path.join(input_local_filepath, f"{source_step_name}-{channel_name}"),
+            )
+            dynamic_inputs.append(temp)
+
+        return dynamic_inputs
 
     
-    def _get_additional_processing_inputs(self) -> list:
+    def _get_processing_inputs(self, input_destination) -> list:
         """
         Method to get additional processing inputs
         """
-
         # Instantiate a list of inputs
-
-        temp_static_input = []
-        if len(self._get_static_input_list()) >= 7:
-            raise Exception("Static inputs for metrics should not exceed 7")
-        else:
-            temp_static_input = self._get_static_input()
-                
-        additional_inputs= temp_static_input
-        return additional_inputs
+        temp_static_input = self._get_static_input(input_destination)
+        temp_dynamic_input = self._get_chain_input(input_destination)
+        processing_inputs = temp_static_input + temp_dynamic_input
+        return processing_inputs
 
     def _generate_model_metrics(
         self, 
         input_destination: str, 
         output_source: str, 
         output_destination: str, 
-        step_transform: TransformStep
     ) -> RunArgs:
         
         """
@@ -205,7 +235,6 @@ class ModelMetricsService:
         - input_destination(str): path for input destination
         - output_source (str): path for output source
         - output_destination (str): path for output destination
-        - step_transform (TransformStep): TransformStep instance
         """
 
         # Get metrics Config
@@ -237,18 +266,8 @@ class ModelMetricsService:
             network_config=NetworkConfig(**sagemakernetworkconfig),
         )
 
-        default_inputs = [
-            ProcessingInput(
-                input_name="model_performance_on_testdataset",
-                source=step_transform.properties.TransformOutput.S3OutputPath,
-                destination=input_destination,
-                s3_data_distribution_type=args.get("s3_data_distribution_type"),
-            )
-        ]
-
         generate_model_metrics_args = processor.run(
-            inputs=default_inputs + self._get_additional_processing_inputs(),
-            # inputs=default_inputs,
+            inputs = self._get_processing_inputs(input_destination),
             outputs=[
                 ProcessingOutput(
                     source=output_source,
@@ -256,7 +275,10 @@ class ModelMetricsService:
                     output_name="model_evaluation_metrics",
                 ),
             ],
-            source_dir=self.config.get(f"models.modelContainer.{self.model_name}.source_directory"),
+            source_dir=self.config.get(
+                f"models.modelContainer.{self.model_name}.source_directory", 
+                os.getenv("SMP_SOURCE_DIR_PATH")
+            ),
             code=args.get("entry_point"),
             wait=True,
             logs=True,
@@ -265,46 +287,46 @@ class ModelMetricsService:
 
         return generate_model_metrics_args
 
-    def calculate_model_metrics(self, step_transform: TransformStep) -> RunArgs:
+    def calculate_model_metrics(self) -> RunArgs:
         """
         Method to calculate models metrics
         """
 
-        # Instantiate model merics list
-        generate_model_metrics = []
-
         self.logger.log_info(f"{'-'*40} {self.model_name} {'-'*40}")
         evaluate_data = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
-        evaluate_channels = list(evaluate_data.get("channels").keys())
+        if isinstance(evaluate_data.get("channels", "train"), ConfigTree):
+            evaluate_channels = list(evaluate_data.get("channels").keys())
+            # Iterate through evaluate channels
+            if len(evaluate_channels) != 1:
+                raise Exception(f" Only one channel allowed within evaluation section. {evaluate_channels} found.")
+            else:
+                channel = evaluate_channels[0]
+                self.logger.log_info(f"During ModelMetricsService, one evaluate channel {channel} found.")
 
-        # Iterate through transform channels
-        if len(evaluate_channels) != 1:
-            raise Exception(f" Only one channel allowed within evaluation section. {evaluate_channels} found.")
+            channel_full_name = f"channels.{channel}"
+            bucket_prefix = evaluate_data.get(f"{channel_full_name}.bucket_prefix", "")
+            s3_bucket_name = evaluate_data.get(f"{channel_full_name}.s3BucketName")
+            processing_input_destination = evaluate_data.get(
+                f"{channel_full_name}.InputLocalFilepath", "/opt/ml/processing/input/"
+            )
+            processing_output_source = evaluate_data.get(
+                f"{channel_full_name}.OuputLocalFilepath", "/opt/ml/processing/output/"
+            )
+            processing_output_key = os.path.join(
+                bucket_prefix,
+                self.model_name,
+                "evaluation",
+            )
+            processing_output_destination = f"s3://{s3_bucket_name}/{processing_output_key}/"
         else:
-            channel = evaluate_channels[0]
-            self.logger.log_info(f"During ModelMetricsService, one evaluate channel {channel} found.")
-
-        channel_full_name = f"channels.{channel}"
-        bucket_prefix = evaluate_data.get(f"{channel_full_name}.bucket_prefix", "")
-        s3_bucket_name = evaluate_data.get(f"{channel_full_name}.s3BucketName")
-        processing_input_destination = evaluate_data.get(
-            f"{channel_full_name}.InputLocalFilepath", "/opt/ml/processing/input/"
-        )
-        processing_output_source = evaluate_data.get(
-            f"{channel_full_name}.OuputLocalFilepath", "/opt/ml/processing/output/"
-        )
-        processing_output_key = os.path.join(
-            bucket_prefix,
-            self.model_name,
-            "evaluation",
-        )
-        processing_output_destination = f"s3://{s3_bucket_name}/{processing_output_key}/"
+            processing_input_destination = "/opt/ml/processing/input/"
+            processing_output_source = "/opt/ml/processing/output/"
+            processing_output_destination = None
 
         generate_model_metrics_args = self._generate_model_metrics(
             input_destination=processing_input_destination,
             output_source=processing_output_source,
             output_destination=processing_output_destination,
-            step_transform=step_transform,
         )
 
         self.logger.log_info(f" Model evaluate completed.")
