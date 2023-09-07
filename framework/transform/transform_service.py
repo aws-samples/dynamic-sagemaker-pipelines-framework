@@ -287,12 +287,6 @@ class TransformService:
             input_data_file_s3path, output_data_file_s3path = self._get_train_inputs_outputs(
                 transform_data
             )
-            
-#         input_data_file_s3path, output_data_file_s3path = self._get_train_inputs_outputs(
-#             transform_data
-#         )
-
-#         input_data_file_s3path =self._get_chain_input() if self._get_chain_input() else input_data_file_s3path
 
         step_transform_args = self._run_batch_transform(
             input_data=input_data_file_s3path,
