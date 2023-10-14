@@ -1,0 +1,76 @@
+---
+conf:
+    models:
+        modelContainer:
+            calhousing:
+                source_directory: tf/modelscripts
+                name: calhousing
+                preprocess:
+                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                    entry_point: preprocess.py
+                    channels:
+                        train:
+                            dataFiles:
+                                - sourceName: raw_data
+                                  fileName: s3://${SMP_S3BUCKETNAME}/tf2-california-housing-pipelines/traindata
+                train:
+                    image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-training:2.11.0-cpu-py39
+                    entry_point: train.py
+
+                registry:
+                    ModelRepack: "False"
+                    InferenceSpecification: 
+                        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
+                        supported_content_types: 
+                            - application/json
+                        supported_response_MIME_types: 
+                            - application/json
+                        approval_status: PendingManualApproval
+
+                transform:
+                  image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
+                  entry_point: inference.py
+                  channels:
+
+                evaluate:
+                  image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                  entry_point: evaluate.py
+                  channels: train
+                  content_type: 
+                  metrics:
+                    model_quality:
+                        Statistics:
+                            ContentType: application/json
+
+
+    sagemakerPipeline:
+        pipelineName: calhousing-test
+        models:
+            calhousing:
+                steps:
+                    - step_name: calhousing-Preprocessing
+                      step_type: preprocess
+                      step_class: Processing
+                      enable_cache: True
+                    - step_name: calhousing-Training
+                      step_class: Training
+                      enable_cache: True
+                      chain_input_source_step: 
+                        - calhousing-Preprocessing
+                    - step_name: calhousing-CreateModel
+                      step_class: CreateModel
+                    - step_name: calhousing-Transform
+                      step_class: Transform
+                      chain_input_source_step: 
+                        - calhousing-Preprocessing
+                      chain_input_additional_prefix: test/x_test.csv
+                    - step_name: calhousing-Metrics
+                      step_class: Metrics
+                      chain_input_source_step: 
+                        - calhousing-Preprocessing
+                        - calhousing-Transform
+                    - step_name: calhousing-Register
+                      step_class: RegisterModel
+
+        dependencies:
+            - calhousing-Preprocessing >> calhousing-Training >> calhousing-CreateModel >> calhousing-Transform >> calhousing-Metrics >> calhousing-Register

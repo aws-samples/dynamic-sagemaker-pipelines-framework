@@ -1,0 +1,7 @@
+lightgbm 
+numpy 
+pandas 
+scikit-learn
+multi-model-server
+sagemaker-inference 
+retrying

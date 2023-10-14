@@ -1,0 +1,15 @@
+---
+conf:
+  applicationName:
+  businessUnit:
+  programName:
+  s3Bucket:
+  sagemakerNetworkSecurity:
+    subnets:
+    role:
+    security_groups_id:
+  models:
+    projectName:
+    modelName:
+    sourceDirPath:
+    modelDomainConfigFilePath:
