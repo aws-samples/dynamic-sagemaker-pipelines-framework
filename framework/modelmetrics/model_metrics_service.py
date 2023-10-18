@@ -100,7 +100,6 @@ class ModelMetricsService:
             instance_count=conf.get("instance_count", 1),
             instance_type=conf.get("instance_type", "ml.m5.2xlarge"),
             strategy=conf.get("strategy", "SingleRecord"),
-            content_type=conf.get("content_type"),
             max_payload=conf.get("max_payload", None),
             volume_size_in_gb=conf.get("volume_size_in_gb", 50),
             max_runtime_in_seconds=conf.get("max_runtime_in_seconds", 3600),

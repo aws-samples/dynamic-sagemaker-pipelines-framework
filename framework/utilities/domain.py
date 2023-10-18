@@ -34,7 +34,9 @@ class Conf:
         base_conf, conf_path = self._get_framework_conf()
         base_conf["conf"]["models"]["modelContainer"] = {}
 
-        yaml_files = glob.glob(f"{self._get_parent_dir()}/*/conf/conf.yaml", recursive=True)
+        modelDomainConfigFilePath= base_conf["conf"]["models"]["modelDomainConfigFilePath"]
+        yaml_files = glob.glob(f"{self._get_parent_dir()}/{modelDomainConfigFilePath}", recursive=True)
+
         for file_path in yaml_files:
             if file_path.startswith(conf_path):
                 continue

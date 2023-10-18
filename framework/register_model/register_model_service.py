@@ -40,7 +40,7 @@ class RegisterModelService:
         if step_metrics:
             model_metrics = ModelMetrics(
                 model_statistics=MetricsSource(
-                    content_type=model_package_dict.get("InferenceSpecification.supported_content_types", "application/json")[0],
+                    content_type= self.config.get(f"models.modelContainer.{self.model_name}.evaluate.content_type", "application/json"),
                     s3_uri = "{}{}.json".format(
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"],
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["OutputName"],
