@@ -36,8 +36,10 @@ conf:
                   image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
                   entry_point: evaluate.py
                   channels: train
-                  content_type: application/json
-
+                  metrics:
+                    model_quality:
+                        Statistics:
+                            ContentType: application/json
 
 
     sagemakerPipeline:
@@ -68,5 +70,6 @@ conf:
                         - calhousing-Transform
                     - step_name: calhousing-Register
                       step_class: RegisterModel
+
         dependencies:
             - calhousing-Preprocessing >> calhousing-Training >> calhousing-CreateModel >> calhousing-Transform >> calhousing-Metrics >> calhousing-Register
