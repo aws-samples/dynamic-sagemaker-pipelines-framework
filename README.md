@@ -4,7 +4,8 @@ This pattern allows you to define your training orchestration in a configuration
 ### How do I define a training orchestration in a configuration? ###
 Create a model level root folder in the repo root(ref. lgbm)
 Create a conf/conf.yaml. The following breaks down sections of the conf.
-the pattern entrypoint picks up all conf.yaml files in model level folders and spins up Sagemaker Pipelines for those.
+- [ ] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
+This pattern entrypoint picks up all conf.yaml files in model level folders and spins up Sagemaker Pipelines for those.
 
  * **_conf_**:
     This section contains the two main set of configurations for components of the models being trained(models) and details of the trainig pipeline(sagemakerPipeline).
@@ -74,8 +75,9 @@ the pattern entrypoint picks up all conf.yaml files in model level folders and s
         - {step_name} >> {step_name}
 
 ### How do I use this pattern for executing Sagemaker Pipelines defined above? ###
+* install the dependencies: pip install -r requirements.txt.
 * After definig the conf above, execute the entrypoint in your terminal using python {Entrypoint_Path}. 
-- [ ] TODO make sure this works:
+- [ ] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
 * The pattern picks up all conf.yaml files defined under framework/{model}/conf/, updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
 * **Entrypoint_Path**: framework/framework_entrypoint.py
 
