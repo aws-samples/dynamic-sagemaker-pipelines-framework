@@ -7,18 +7,18 @@ conf:
                 name: LightGBM-OnlineShopping
                 train:
                     instance_type: ml.c5.xlarge
-                    image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:1.9.0-cpu-py38
+                    image_uri: SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38
                     entry_point: training/training.py
                     base_job_name: lightgbm-train
                     channels:
                         train:
                             dataFiles:
                                 - sourceName: online_shoppers_intention train
-                                  fileName: s3://${SMP_S3BUCKETNAME}/lightGBM/train
+                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/train
                         test:
                             dataFiles:
                                 - sourceName: online_shoppers_intention test
-                                  fileName: s3://${SMP_S3BUCKETNAME}/lightGBM/test
+                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/test
 
                 registry:
                     ModelRepack: "False"
@@ -37,23 +37,23 @@ conf:
                   content_type: application/x-npy
                   channels:
                         test:
-                            s3BucketName: ${SMP_S3BUCKETNAME}                     
+                            s3BucketName: SMP_S3BUCKETNAME                   
                             dataFiles:
                                 - sourceName: online_shoppers_intention_test
-                                  fileName: s3://${SMP_S3BUCKETNAME}/lightGBM/test/x_test.npy
+                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/test/x_test.npy
 
                 evaluate:
                   instance_type: ml.c5.xlarge
-                  image_uri: '763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:1.9.0-cpu-py38'
+                  image_uri: 'SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38'
                   entry_point: evaluate/evaluate.py
                   base_job_name: lgbm-evaluate
                   content_type: application/json
                   channels:
                         test:
-                            s3BucketName: ${SMP_S3BUCKETNAME}                     
+                            s3BucketName: SMP_S3BUCKETNAME                   
                             dataFiles:
                                 - sourceName: online_shoppers_intention_ytest
-                                  fileName: s3://${SMP_S3BUCKETNAME}/lightGBM/test/y_test.npy
+                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/test/y_test.npy
 
     sagemakerPipeline:
         pipelineName: lgbm-test

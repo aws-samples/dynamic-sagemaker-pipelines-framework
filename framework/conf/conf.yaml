@@ -1,15 +1,14 @@
 ---
 conf:
-  applicationName: ${SMP_APPLICATIONNAME}
-  businessUnit: ${SMP_BUSSINESS_UNIT}
-  programName: ${SMP_PROGRAMNAME}
-  s3Bucket: ${SMP_S3BUCKETNAME}
+  applicationName: SMP_APPLICATIONNAME
+  businessUnit: SMP_BUSSINESS_UNIT
+  programName: SMP_PROGRAMNAME
+  s3Bucket: SMP_S3BUCKETNAME
   sagemakerNetworkSecurity:
-    subnets: ${SMP_SUBNETS}
-    role: ${SMP_ROLE}
-    security_groups_id: ${SMP_SECURITYGROUPS}
+    subnets: SMP_SUBNETS
+    role: SMP_ROLE
+    security_groups_id: SMP_SECURITYGROUPS
   models:
-    projectName: ${SMP_PROJECTNAME}
-    modelName: ${SMP_MODELNAME}
-    sourceDirPath: ${SMP_SOURCE_DIRPATH}
-    modelDomainConfigFilePath: ${SMP_MODEL_DOMAIN_CONFIGPATH}
+    projectName: SMP_PROJECTNAME
+    modelName: SMP_MODELNAME
+    modelDomainConfigFilePath: SMP_MODEL_DOMAIN_CONFIGPATH
