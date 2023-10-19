@@ -47,10 +47,7 @@ conf:
                   image_uri: '763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:1.9.0-cpu-py38'
                   entry_point: evaluate/evaluate.py
                   base_job_name: lgbm-evaluate
-                  metrics:
-                    model_quality:
-                        Statistics:
-                            ContentType: application/json
+                  content_type: application/json
                   channels:
                         test:
                             s3BucketName: ${SMP_S3BUCKETNAME}                     

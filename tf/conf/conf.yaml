@@ -36,10 +36,7 @@ conf:
                   image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
                   entry_point: evaluate.py
                   channels: train
-                  metrics:
-                    model_quality:
-                        Statistics:
-                            ContentType: application/json
+                  content_type: application/json
 
 
     sagemakerPipeline:
