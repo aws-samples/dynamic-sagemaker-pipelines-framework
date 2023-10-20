@@ -99,8 +99,9 @@ This pattern allows you to define your training orchestration in a configuration
     ```
 
     - Note:
-    > Single-model example: SMP_MODEL_DOMAIN_CONFIGPATH="lgbm/conf/conf.yaml"  
-    > Multi-model  ecample: SMP_MODEL_DOMAIN_CONFIGPATH="*/conf/conf.yaml"  
+    > **single-model** example: `SMP_MODEL_DOMAIN_CONFIGPATH="lgbm/conf/conf.yaml" `
+
+    > **multi-model**  example: `SMP_MODEL_DOMAIN_CONFIGPATH="*/conf/conf.yaml"  `
 
     1. Environment Variables need to exists before execute the framework, and how to export those will depend on every preference. To avoid make public environment variables that contain credentials and to make easy to use on local testing we provide an `env.env` file where you can specified the values for those.  
     
@@ -129,7 +130,7 @@ This pattern allows you to define your training orchestration in a configuration
 
 Create a model level root folder in the repo root(ref. lgbm)
 Create a conf/conf.yaml. The following breaks down sections of the conf.
-- [ ] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
+- [X] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
 This pattern entrypoint picks up all conf.yaml files in model level folders and spins up Sagemaker Pipelines for those.
 
  * **_conf_**:
