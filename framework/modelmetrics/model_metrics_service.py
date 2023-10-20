@@ -96,7 +96,7 @@ class ModelMetricsService:
         args = dict(
             image_uri=conf.get("image_uri"),
             entry_point=conf.get("entry_point"),
-            base_job_name=conf.get("base_job_name"),
+            base_job_name=conf.get("base_job_name", "default-model-metrics-job-name"),
             instance_count=conf.get("instance_count", 1),
             instance_type=conf.get("instance_type", "ml.m5.2xlarge"),
             strategy=conf.get("strategy", "SingleRecord"),
