@@ -153,7 +153,6 @@ class ProcessingService:
         args = self._args()
         # Get the total number of input files
         input_files_list = self._get_static_input_list()
-        print("*"*100, input_files_list, "*"*100)
         static_inputs = []
         input_local_filepath = "/opt/ml/processing/input/"
 
