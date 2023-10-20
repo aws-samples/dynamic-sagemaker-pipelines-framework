@@ -2,5 +2,5 @@
 *.ipynb
 *.ipynb_checkpoints*
 *__pycache__*
-
+pipeline_definition.json
 *env.txt
