@@ -88,7 +88,7 @@ class TrainingService:
 
         args = dict(
             image_uri=conf.get("image_uri"),
-            base_job_name=conf.get("base_job_name"),
+            base_job_name=conf.get("base_job_name", "default-training-job-name"),
             entry_point=conf.get("entry_point"),
             instance_count=conf.get("instance_count", 1),
             instance_type=conf.get("instance_type", "ml.m5.2xlarge"),

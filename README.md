@@ -162,7 +162,7 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 preprocess:                                    <------------- Preprocess Section (Optional)
                     image_uri:                                 <------------- Field Required
                     entry_point:                               <------------- Field Required
-                    base_job_name:                             <------------- Field Required
+                    base_job_name:                             <------------- Field OPTIONAL
                     instance_count:                            <------------- Field OPTIONAL, if value is not defined will take the default value: 1
                     instance_type:                             <------------- Field OPTIONAL, if value is not defined will take the default value: "ml.m5.2xlarge"
                     volume_size_in_gb:                         <------------- Field OPTIONAL, if value is not defined will take the default value: 32
@@ -190,7 +190,7 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 train:                                           <------------- Training Section
                     image_uri:                                   <------------- Field Required 
                     entry_point:                                 <------------- Field Required 
-                    base_job_name:                               <------------- Field Required
+                    base_job_name:                               <------------- Field OPTIONAL
                     instance_count:                              <------------- Field OPTIONAL, if value is not defined will take the default value: 1
                     instance_type:                               <------------- Field OPTIONAL, if value is not defined will take the default value: "ml.m5.2xlarge"
                     volume_size_in_gb:                           <------------- Field OPTIONAL, if value is not defined will take the default value: 32
@@ -230,6 +230,32 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 * <font size="1"> **NOTE:** CreateModel step is implicit and does not need to be defined here. It can be declared directly in the _sagemakerPipeline_ section.</font>
             * **[transform](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)** <font size="1"> **NOTE:** Transform step definition is required with entry_point parameter provided to register or create a model, even if not declared in _sagemakerPipeline_ section. Definiton and declaration is required though for metrics steps.</font>
                 * **[Parameters](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L89-L104)**
+
+                ```
+                transform:                              <------------- Transform Section
+                  image_uri:                            <------------- Field Required 
+                  base_job_name:                        <------------- Field OPTIONAL, if value is not defined will take the default value: "default-transform-job-name"
+                  instance_count:                       <------------- Field OPTIONAL, if value is not defined will take the default value: 1
+                  instance_type:                        <------------- Field OPTIONAL, if value is not defined will take the default value: "ml.m5.2xlarge"
+                  strategy:                             <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  assemble_with:                        <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  join_source:                          <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  split_type:                           <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  content_type:                         <------------- Field OPTIONAL, if value is not defined will take the default value: "text/csv"
+                  max_payload:                          <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  volume_size:                          <------------- Field OPTIONAL, if value is not defined will take the default value: 50
+                  max_runtime_in_seconds:               <------------- Field OPTIONAL, if value is not defined will take the default value: 3600
+                  input_filter:                         <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  output_filter:                        <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  tags:                                 <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  env:                                  <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                  channels:
+                        test:
+                            s3BucketName: 
+                            dataFiles:
+                                - sourceName:           <------------- Field OPTIONAL
+                                  fileName:             <------------- Field OPTIONAL
+                ```
                 * **[s3BucketName](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L132)**: s3 bucket for the results of the batch transform job. Also used to stage local input files pointed in _fileName_
                 * **[inputBucketPrefix](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L131)**: an s3 bucket prefix appended to _s3BucketName_ used for results of the batch transform job. Also used to stage local input files pointed in _fileName_
                 * dataFiles loaded on conatiner are managed by the model server(e.x [tensorflow serving](https://sagemaker.readthedocs.io/en/stable/frameworks/tensorflow/deploying_tensorflow_serving.html#)) implemented, serving logic for the machine learning framwork(e.x tensorflow), and [transform workflow](https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html) [guided](https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html#batch-transform-large-datasets) by the parameters used. <font size="1"> **NOTE:** only one channel and in that one dataFile allowed for Transform step </font>
