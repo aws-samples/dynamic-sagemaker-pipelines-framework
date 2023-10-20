@@ -162,6 +162,7 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 preprocess:                                    <------------- Preprocess Section (Optional)
                     image_uri:                                 <------------- Field Required
                     entry_point:                               <------------- Field Required
+                    base_job_name:                             <------------- Field Required
                     instance_count:                            <------------- Field OPTIONAL, if value is not defined will take the default value: 1
                     instance_type:                             <------------- Field OPTIONAL, if value is not defined will take the default value: "ml.m5.2xlarge"
                     volume_size_in_gb:                         <------------- Field OPTIONAL, if value is not defined will take the default value: 32
@@ -177,13 +178,38 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                         train:
                             dataFiles:
                                 - sourceName:                   <------------- Field OPTIONAL
-                                    fileName:                     <------------- Field Required
+                                    fileName:                   <------------- Field Required
                 ```
 
                 * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_"
                 * Container paths that sagemaker uses to offload content to S3: "_/opt/ml/processing/input/{channelName}/_"
             * **[train](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-training)** (Required)
                 * **[Parameters](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/training/training_service.py#L90-L104)**
+
+                ```
+                train:                                           <------------- Training Section
+                    image_uri:                                   <------------- Field Required 
+                    entry_point:                                 <------------- Field Required 
+                    base_job_name:                               <------------- Field Required
+                    instance_count:                              <------------- Field OPTIONAL, if value is not defined will take the default value: 1
+                    instance_type:                               <------------- Field OPTIONAL, if value is not defined will take the default value: "ml.m5.2xlarge"
+                    volume_size_in_gb:                           <------------- Field OPTIONAL, if value is not defined will take the default value: 32
+                    max_runtime_seconds:                         <------------- Field OPTIONAL, if value is not defined will take the default value: 3000
+                    tags:                                        <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                    env:                                         <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                    hyperparams:                                 <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                    model_data_uri:                              <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                    channels:
+                        train:                                   <------------- Train Channel (required)
+                            dataFiles:
+                                - sourceName:                    <------------- Field OPTIONAL
+                                  fileName:                      <------------- Field OPTIONAL
+                        test:                                    <------------- Test Channel (optional)
+                            dataFiles:
+                                - sourceName:                    <------------- Field OPTIONAL
+                                  fileName:                      <------------- Field OPTIONAL
+                ```
+
                 * dataFiles loaded on conatiner at "_/opt/ml/input/data/{channelName}/_"(also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
                 * Container path that sagemaker uses to zip trained model content and upload to S3: "_/opt/ml/model/_"
             * **[create](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-register-model)**
