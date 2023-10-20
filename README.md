@@ -155,8 +155,31 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                         * **dataFiles**
                             * **sourceName**: an identifier for this file/s
                             * **fileName**: path(local or s3) of the file to load
-            * **[{processing}](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-processing)**
+            * **[processing](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-processing)** (_Optional step_)
                 * **[Parameters](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/processing/processing_service.py#L101-L117)**
+
+                    ```
+                    preprocess:                                    <------------- Preprocess Section (Optional)
+                        image_uri:                                 <------------- Field Required
+                        entry_point:                               <------------- Field Required
+                        instance_count:                            <------------- Field OPTIONAL, if value is not defined will take the default value: 1
+                        instance_type:                             <------------- Field OPTIONAL, if value is not defined will take the default value: "ml.m5.2xlarge"
+                        volume_size_in_gb:                         <------------- Field OPTIONAL, if value is not defined will take the default value: 32
+                        max_runtime_seconds:                       <------------- Field OPTIONAL, if value is not defined will take the default value: 3000
+                        tags:                                      <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                        env:                                       <------------- Field OPTIONAL, if value is not defined will take the default value: None
+                        framework_version:                         <------------- Field OPTIONAL, if value is not defined will take the default value: "0"
+                        s3_data_distribution_type:                 <------------- Field OPTIONAL, if value is not defined will take the default value: "FullyReplicated"
+                        s3_data_type:                              <------------- Field OPTIONAL, if value is not defined will take the default value: "S3Prefix"
+                        s3_input_mode:                             <------------- Field OPTIONAL, if value is not defined will take the default value: "File"
+                        s3_upload_mode:                            <------------- Field OPTIONAL, if value is not defined will take the default value: "EndOfJob"
+                        channels:
+                            train:
+                                dataFiles:
+                                    - sourceName:                   <------------- Field OPTIONAL
+                                      fileName:                     <------------- Field Required
+                    ```
+
                 * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_"
                 * Container paths that sagemaker uses to offload content to S3: "_/opt/ml/processing/input/{channelName}/_"
             * **[train](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-training)** (Required)
