@@ -132,7 +132,10 @@ class ProcessingService:
         conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
         # Get the total number of input files
         input_files_list = list()
-        for channel in conf.get("channels", {}).keys(): input_files_list.append(conf.get(f"channels.{channel}.dataFiles", [])[0])
+        for channel in conf.get("channels", {}).keys():
+            temp_data_files = conf.get(f"channels.{channel}.dataFiles", [])
+            if temp_data_files:
+                input_files_list.append(temp_data_files[0])
         return input_files_list
     
     def _get_static_input(self)-> Tuple[list,int]:
@@ -150,7 +153,7 @@ class ProcessingService:
         args = self._args()
         # Get the total number of input files
         input_files_list = self._get_static_input_list()
-
+        print("*"*100, input_files_list, "*"*100)
         static_inputs = []
         input_local_filepath = "/opt/ml/processing/input/"
 

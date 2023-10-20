@@ -162,13 +162,10 @@ class TransformService:
         ----------
         - SageMaker Processing Inputs list
         """
-        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.transform.channels", "train")
-        if isinstance(channels_conf, str):
-            channel_name = channels_conf
-        else:
-            if len(channels_conf.keys()) != 1:
-                raise Exception("Transform step can only have one channel.")
-            channel_name = list(channels_conf.keys())[0]
+        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.transform.channels", {"train":[]})
+        if len(channels_conf.keys()) != 1:
+            raise Exception("Transform step can only have one channel.")
+        channel_name = list(channels_conf.keys())[0]
         
         dynamic_processing_input = []
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])

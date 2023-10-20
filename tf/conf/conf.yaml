@@ -12,7 +12,7 @@ conf:
                         train:
                             dataFiles:
                                 - sourceName: raw_data
-                                  fileName: s3://${SMP_S3BUCKETNAME}/tf2-california-housing-pipelines/traindata
+                                  fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata
                 train:
                     image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-training:2.11.0-cpu-py39
                     entry_point: train.py
@@ -30,7 +30,8 @@ conf:
                 transform:
                   image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
                   entry_point: inference.py
-                  channels: train
+                  channels: 
+                      train:
 
                 evaluate:
                   image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
