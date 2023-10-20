@@ -214,6 +214,19 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 * Container path that sagemaker uses to zip trained model content and upload to S3: "_/opt/ml/model/_"
             * **[create](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-register-model)**
                 * **[Parameters](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blame/main/framework/createmodel/create_model_service.py#L90-L104)**
+
+                ```
+                registry:
+                    ModelRepack: "False"
+                    InferenceSpecification: 
+                        image_uri:                               <------------- Field Required 
+                        supported_content_types: 
+                            - application/json                   <------------- Field Required 
+                        supported_response_MIME_types: 
+                            - application/json                   <------------- Field Required 
+                        approval_status:                         <------------- Field Required valid values: PendingManualApproval | Rejected | Approved
+                ```
+
                 * <font size="1"> **NOTE:** CreateModel step is implicit and does not need to be defined here. It can be declared directly in the _sagemakerPipeline_ section.</font>
             * **[transform](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)** <font size="1"> **NOTE:** Transform step definition is required with entry_point parameter provided to register or create a model, even if not declared in _sagemakerPipeline_ section. Definiton and declaration is required though for metrics steps.</font>
                 * **[Parameters](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L89-L104)**
