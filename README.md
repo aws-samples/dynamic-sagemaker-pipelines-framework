@@ -1,7 +1,132 @@
 ## dynamic-model-training-with-amazon-sagemaker-pipelines
 This pattern allows you to define your training orchestration in a configuration(yaml) file to define/update and start a Sagemaker Pipeline
 
-### How do I define a training orchestration in a configuration? ###
+### How do I use this pattern for executing Sagemaker Pipelines?
+* The pattern load single or multi conf.yaml base on the environment variable `SMP_MODEL_DOMAIN_CONFIGPATH` , updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
+
+#### Steps
+
+1. Repository Structure
+
+
+    Make sure your model repo structure follow at least one the following patterns.
+
+    _Basic Structure_ 
+
+    ```
+    <MODEL-MAIN-DIR>
+    .
+    ├── MODEL-DIR
+    |   ├── conf
+    |   |   └── conf.yaml
+    |   └── scripts
+    |       ├── preprocess.py
+    |       ├── train.py
+    |       ├── transform.py
+    |       └── evaluate.py
+    └── README.md
+    ```
+    _Desire Structure_
+
+    ```
+    <MODEL-MAIN-DIR>
+    .
+    ├── MODEL-DIR
+    |   ├── conf
+    |   |    └── conf.yaml
+    |   ├── preprocess
+    |   |   └── preprocess.py
+    |   ├── train
+    |   |   └── train.py
+    |   ├── transform
+    |   |   └── transform.py
+    |   └── evaluate
+    |       └── evaluate.py
+    └── README.md
+    ```
+
+1. Get the source code needed  
+    1. Clone `  dynamic-model-training-with-amazon-sagemaker-pipelines Framework` and persisted into a training folder. (For this example we will use aws-train folder)  
+
+        ```bash
+        git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
+        ```
+
+    1. Clone the model(s) source code under the same directory.  
+        _Note_:  For multi-model training repeat previous step as many models do you require to train
+
+        ```bash
+        git clone https:<YOUR-MODEL-REPO>.git aws-train
+        ```
+
+        For a single-model your directory should looks like:
+
+        ```
+        <aws-train>  
+        .  
+        ├── framework
+        └── <YOUR-MODEL-DIRECTORY>
+        ```
+
+        For multi-model your directory should looks like:
+
+        ```
+        <aws-train>  
+        .  
+        ├── framework
+        └── <YOUR-MODEL-1-DIRECTORY>
+        └── <YOUR-MODEL-2-DIRECTORY>
+        └── <YOUR-MODEL-3-DIRECTORY>
+        ```
+
+1. Setup your environment variables.  
+
+    This is a list of the environment variables:
+
+    ```bash
+    SMP_ACCOUNTID                      (required) | AWS Account where SageMaker Pipeline is executed
+    SMP_REGION                         (required) | AWS Region where SageMaker Pipeline is executed
+    SMP_S3BUCKETNAME                   (required) | AWS S3 bucket
+    SMP_ROLE                           (required) | AWS SageMaker role
+    SMP_MODEL_DOMAIN_CONFIGPATH        (required) | relative path for the configuration path of single-model or multi-model
+    SMP_APPLICATIONNAME                (optional)
+    SMP_BUSSINESS_UNIT                 (optional)
+    SMP_PROGRAMNAME                    (optional)
+    SMP_SUBNETS                        (optional)
+    SMP_SECURITYGROUPS                 (optional)
+    SMP_PROJECTNAME                    (optional)
+    SMP_MODELNAME                      (optional)
+    ```
+
+    - Note:
+    > Single-model example: SMP_MODEL_DOMAIN_CONFIGPATH="lgbm/conf/conf.yaml"  
+    > Multi-model  ecample: SMP_MODEL_DOMAIN_CONFIGPATH="*/conf/conf.yaml"  
+
+    1. Environment Variables need to exists before execute the framework, and how to export those will depend on every preference. To avoid make public environment variables that contain credentials and to make easy to use on local testing we provide an `env.env` file where you can specified the values for those.  
+    
+    To export for local testing, on your terminal write:
+    ```bash
+    source env.env
+    ```
+1. Create and Activate a virtual environment (recommended)
+
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+1. Install python packages required
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+1. Command line execution for orchestrate the training
+
+    ```bash
+    python framework/framework_entrypoint.py
+    ```
+
 Create a model level root folder in the repo root(ref. lgbm)
 Create a conf/conf.yaml. The following breaks down sections of the conf.
 - [ ] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
@@ -73,13 +198,6 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 * **chain_input_additional_prefix**: (Optional) - only allowed in Transform step types to be specific about content under this S3 prefix under the chain_input_source_step S3 path.
     * **dependencies**: following airflow notation, the sequence of steps across single DAG or Multi-DAG execution. If dependencies is left blank, explicit dependencies between steps by _chain_input_source_step_ parameter and/or implicit dependencies define the Sagemaker Pipleine DAG.
         - {step_name} >> {step_name}
-
-### How do I use this pattern for executing Sagemaker Pipelines defined above? ###
-* install the dependencies: pip install -r requirements.txt.
-* After definig the conf above, execute the entrypoint in your terminal using python {Entrypoint_Path}. 
-- [ ] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
-* The pattern picks up all conf.yaml files defined under framework/{model}/conf/, updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
-* **Entrypoint_Path**: framework/framework_entrypoint.py
 
 # TODO add reademe contents
 IAM section - create role
