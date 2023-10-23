@@ -22,7 +22,7 @@ from sagemaker.workflow import steps
 from sagemaker.workflow.functions import Join
 
 
-def look_up_step_type_from_step_name(source_step_name: str, model_name: str, config: dict) -> str:
+def look_up_step_type_from_step_name(source_step_name: str, config: dict) -> str:
     """
     Look up a step_type in the sagemakerPipeline providing source_step_name and model_name.
 
@@ -36,20 +36,27 @@ def look_up_step_type_from_step_name(source_step_name: str, model_name: str, con
         The step_type.
     """    
     # note: chain_input_source_step will error out if source_step does not have an optional step_type declared in sagemakerPipeline section of conf. step_type is mandatory for step_class: Processing.
-    steps_dict= config['models']['modelContainer'][model_name] 
-    smp_steps_dict= config['sagemakerPipeline']['models'][model_name]['steps']
-    
-    for step in smp_steps_dict: 
-        if step['step_name'] == source_step_name: 
-            try:
-                return step['step_type']
-            except KeyError:
-                print(f'When chaining input, source {source_step_name} needs to include step_type, in sagemakerPipeline section of conf')
-            finally:
+    for model_name in config['models']['modelContainer'].keys():
+        steps_dict= config['models']['modelContainer'][model_name] 
+        smp_steps_dict= config['sagemakerPipeline']['models'][model_name]['steps']
+
+        for step in smp_steps_dict:
+            if step['step_name'] == source_step_name:
                 if step['step_class'] == 'Processing':
-                    print(f'{source_step_name} is of step_class Processing, step_type mandatoy for Processing jobs')
+                    try:
+                        return step['step_type']
+                    except KeyError:
+                        print(
+                            f'When chaining input, source {source_step_name} needs to include step_type, in sagemakerPipeline section of conf'
+                        )
+                elif step['step_class'] == 'Training':
+                    return "train"
+                elif step['step_class'] == 'Transform':
+                    return "transform"
+                else:
+                    raise Exception("Only Prcoessing, Training & Transform Step can be used as chain input source.")
 
-
+                    
 
 def look_up_steps(source_step_name: str, steps_dict: dict) -> steps.Step:
     """

@@ -2,9 +2,9 @@
 conf:
     models:
         modelContainer:
-            calhousing:
-                source_directory: tf/modelscripts
-                name: calhousing
+            calhousingtf:
+                source_directory: examples/multi-model-example/cal_housing_tf/modelscripts
+                name: calhousingtf
                 preprocess:
                     image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
                     entry_point: preprocess.py
@@ -12,7 +12,8 @@ conf:
                         train:
                             dataFiles:
                                 - sourceName: raw_data
-                                  fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata
+                                  fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
+
                 train:
                     image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-training:2.11.0-cpu-py39
                     entry_point: train.py
@@ -44,47 +45,47 @@ conf:
     sagemakerPipeline:
         pipelineName: calhousing-test
         models:
-            falcon40b-finetuneable:
+            calhousingpca:
                 steps:
-                  - step_name: falcon-text-summarization-preprocess
-                    step_class: Processing
-                    step_type: preprocess
-                    enable_cache: True
-                  - step_name: falcon-text-summarization-tuning
-                    step_class: Training
-                    enable_cache: False
-                    step_type: train
-                    chain_input_source_step:
-                      - falcon-text-summarization-preprocess
-                  - step_name: falcon-text-summarization-register
-                    step_class: RegisterModel
-                    enable_cache: False
-            calhousing:
+                    - step_name: calhousing-pca-Preprocessing
+                      step_class: Processing
+                      step_type: preprocess
+                      enable_cache: True
+                    - step_name: calhousing-pca-Training
+                      step_class: Training
+                      enable_cache: True
+                      chain_input_source_step:
+                        - calhousing-pca-Preprocessing
+                    - step_name: calhousing-pca-Register
+                      step_class: RegisterModel
+            calhousingtf:
                 steps:
-                    - step_name: calhousing-Preprocessing
+                    - step_name: calhousing-tf-Preprocessing
                       step_type: preprocess
                       step_class: Processing
+                      chain_input_source_step: 
+                        - calhousing-pca-Training
                       enable_cache: True
-                    - step_name: calhousing-Training
+                    - step_name: calhousing-tf-Training
                       step_class: Training
                       enable_cache: True
                       chain_input_source_step: 
-                        - calhousing-Preprocessing
-                    - step_name: calhousing-CreateModel
+                        - calhousing-tf-Preprocessing
+                    - step_name: calhousing-tf-CreateModel
                       step_class: CreateModel
-                    - step_name: calhousing-Transform
+                    - step_name: calhousing-tf-Transform
                       step_class: Transform
                       chain_input_source_step: 
-                        - calhousing-Preprocessing
+                        - calhousing-tf-Preprocessing
                       chain_input_additional_prefix: test/x_test.csv
-                    - step_name: calhousing-Metrics
+                    - step_name: calhousing-tf-Metrics
                       step_class: Metrics
                       chain_input_source_step: 
-                        - calhousing-Preprocessing
-                        - calhousing-Transform
-                    - step_name: calhousing-Register
+                        - calhousing-tf-Preprocessing
+                        - calhousing-tf-Transform
+                    - step_name: calhousing-tf-Register
                       step_class: RegisterModel
 
         dependencies:
-            - calhousing-Preprocessing >> calhousing-Training >> calhousing-CreateModel >> calhousing-Transform >> calhousing-Metrics >> calhousing-Register
-            - falcon-text-summarization-preprocess >> falcon-text-summarization-tuning >> falcon-text-summarization-register
+            - calhousing-tf-Preprocessing >> calhousing-tf-Training >> calhousing-tf-CreateModel >> calhousing-tf-Transform >> calhousing-tf-Metrics >> calhousing-tf-Register
+            - calhousing-pca-Preprocessing >> calhousing-pca-Training >> calhousing-pca-Register

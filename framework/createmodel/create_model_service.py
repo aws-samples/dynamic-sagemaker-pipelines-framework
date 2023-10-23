@@ -92,10 +92,10 @@ class CreateModelService:
             model_repack_flag=conf.get(f"{self.model_name}.registry.ModelRepack", "True"),
             # source_dir=conf.get(f"{self.model_name}.source_directory", os.environ["SMP_SOURCE_DIR_PATH"]),
             source_dir=conf.get(f"{self.model_name}.source_directory"),
-            entry_point= conf.get(f"{self.model_name}.transform.entry_point").replace("/", ".").replace(".py", ""),
+            entry_point= conf.get(f"{self.model_name}.transform.entry_point", "inference.py").replace("/", ".").replace(".py", ""),
             env={
                 "SAGEMAKER_SUBMIT_DIRECTORY": "/opt/ml/model/code",
-                "SAGEMAKER_PROGRAM": conf.get(f"{self.model_name}.transform.entry_point")
+                "SAGEMAKER_PROGRAM": conf.get(f"{self.model_name}.transform.entry_point", "inference.py")
                 .replace("/", ".")
                 .replace(".py", ""),
                 "SAGEMAKER_REQUIREMENTS": "requirements.txt",

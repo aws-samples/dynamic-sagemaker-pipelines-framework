@@ -229,12 +229,13 @@ class ProcessingService:
         input_local_filepath = "/opt/ml/processing/input/"
         args = self._args()
 
-            
-
         for source_step_name in chain_input_source_step:
-            source_step_type= look_up_step_type_from_step_name(source_step_name= source_step_name, model_name=self.model_name, config=self.config)
+            source_step_type= look_up_step_type_from_step_name(
+                source_step_name=source_step_name, 
+                config=self.config
+            )
 
-            for channel in self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels', ["train"]):
+            for channel in self.config["models"]["modelContainer"][self.model_name][source_step_type].get('channels', ["train"]):
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
                     steps_dict=self.model_step_dict,
@@ -244,7 +245,7 @@ class ProcessingService:
                 temp = ProcessingInput(
                     input_name=f"{source_step_name}-input-{channel}",
                     source=chain_input_path,
-                    destination=os.path.join(input_local_filepath, channel),
+                    destination=os.path.join(input_local_filepath, f"{source_step_name}-input-{channel}"),
                     s3_data_distribution_type=args.get("s3_data_distribution_type")
                 )
                 dynamic_processing_input.append(temp)

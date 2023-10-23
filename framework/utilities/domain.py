@@ -61,7 +61,6 @@ class Conf:
                     base_conf["conf"]["sagemakerPipeline"].update(value)
 
         update_conf = self._inject_env_variables(config=base_conf)
-        print(DotDict(update_conf).get("conf"))
         return DotDict(update_conf).get("conf")
 
     def _inject_env_variables(

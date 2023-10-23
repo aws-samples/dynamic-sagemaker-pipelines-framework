@@ -180,7 +180,10 @@ class TrainingService:
         
         
         for source_step_name in chain_input_source_step:
-            source_step_type= look_up_step_type_from_step_name(source_step_name= source_step_name, model_name=self.model_name, config=self.config)
+            source_step_type= look_up_step_type_from_step_name(
+                source_step_name=source_step_name,
+                config=self.config
+            )
             training_channel_inputs[source_step_name] = {}
             for channel in self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels', ["train"]):
                 chain_input_path = get_chain_input_file(
