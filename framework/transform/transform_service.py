@@ -16,20 +16,15 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Import native libraries
-import os
 from typing import Union, Tuple
 
+from pipeline.helper import get_chain_input_file
 # Import third-party libraries
 from sagemaker.transformer import Transformer
-from sagemaker.workflow.execution_variables import ExecutionVariables
 from sagemaker.workflow.functions import Join
 from sagemaker.workflow.pipeline_context import PipelineSession
-
 # Import custom libraries
 from utilities.logger import Logger
-from utilities.utils import S3Utilities
-from pipeline.helper import get_chain_input_file
-
 
 
 class TransformService:
@@ -64,11 +59,13 @@ class TransformService:
 
         network_config_kwargs = dict(
             enable_network_isolation=False,
-            security_group_ids= self.config.get("sagemakerNetworkSecurity.security_groups_id").split(",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
-            subnets= self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get("sagemakerNetworkSecurity.subnets", None) else None,
+            security_group_ids=self.config.get("sagemakerNetworkSecurity.security_groups_id").split(
+                ",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
+            subnets=self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get(
+                "sagemakerNetworkSecurity.subnets", None) else None,
             kms_key=self.config.get("sagemakerNetworkSecurity.kms_key"),
             encrypt_inter_container_traffic=True,
-            role = self.config.get("sagemakerNetworkSecurity.role"),
+            role=self.config.get("sagemakerNetworkSecurity.role"),
         )
         return network_config_kwargs
 
@@ -119,7 +116,7 @@ class TransformService:
         - input_data_file_s3path (str): Input path location
         - output_file_s3path (str): Output path location
         """
-        
+
         evaluate_channels = list(transform_data.get("channels", "train").keys())
         if len(evaluate_channels) != 1:
             raise Exception(f"Only one channel allowed within Transform evaluate section. {evaluate_channels} found.")
@@ -128,11 +125,12 @@ class TransformService:
             self.logger.log_info("INFO", f"During TransformService, one evaluate channel {channel} found.")
 
         channel_full_name = f"channels.{channel}"
-        bucket_prefix = transform_data.get(f"{channel_full_name}.inputBucketPrefix")+'/' if transform_data.get(f"{channel_full_name}.inputBucketPrefix") else ""
+        bucket_prefix = transform_data.get(f"{channel_full_name}.inputBucketPrefix") + '/' if transform_data.get(
+            f"{channel_full_name}.inputBucketPrefix") else ""
         s3_bucket_name = transform_data.get(f"{channel_full_name}.s3BucketName")
 
         # Transform data source
-        files = list(transform_data.get(f"{channel_full_name}.dataFiles",""))
+        files = list(transform_data.get(f"{channel_full_name}.dataFiles", ""))
 
         if len(files) == 1:
             file = files[0]
@@ -153,7 +151,7 @@ class TransformService:
         output_file_s3path = f"s3://{s3_bucket_name}/{bucket_prefix}{self.model_name}/predictions/transform"
 
         return input_data_file_s3path, output_file_s3path
-    
+
     def _get_chain_input(self):
         """
         Method to retreive SageMaker chain inputs
@@ -162,11 +160,11 @@ class TransformService:
         ----------
         - SageMaker Processing Inputs list
         """
-        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.transform.channels", {"train":[]})
+        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.transform.channels", {"train": []})
         if len(channels_conf.keys()) != 1:
             raise Exception("Transform step can only have one channel.")
         channel_name = list(channels_conf.keys())[0]
-        
+
         dynamic_processing_input = []
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])
         chain_input_additional_prefix = self.step_config.get("chain_input_additional_prefix", "")
@@ -182,7 +180,7 @@ class TransformService:
                     steps_dict=self.model_step_dict,
                     source_output_name=channel_name,
                 )
-                
+
                 input_data_file_s3path = Join("/", [chain_input_path, chain_input_additional_prefix])
 
         elif len(chain_input_source_step) == 0:
@@ -198,12 +196,12 @@ class TransformService:
         return input_data_file_s3path
 
     def _run_batch_transform(
-        self,
-        input_data: str,
-        output_path: str,
-        network_config: dict,
-        sagemaker_model_name: str,
-        args: dict,
+            self,
+            input_data: str,
+            output_path: str,
+            network_config: dict,
+            sagemaker_model_name: str,
+            args: dict,
     ) -> dict:
         """
         Method to setup a SageMaker Transformer and Transformer arguments
@@ -253,8 +251,8 @@ class TransformService:
         return step_transform_args
 
     def transform(
-        self,
-        sagemaker_model_name: str,
+            self,
+            sagemaker_model_name: str,
     ) -> Union[dict, dict]:
         """
         Method to setup SageMaker TransformStep
@@ -267,7 +265,7 @@ class TransformService:
         """
 
         step_transform_args = None
-        self.logger.log_info(f"{'-'*40} {self.model_name} {'-'*40}")
+        self.logger.log_info(f"{'-' * 40} {self.model_name} {'-' * 40}")
         self.logger.log_info(f"Starting {self.model_name} batch transform")
 
         # Get SageMaker network configuration
@@ -276,7 +274,7 @@ class TransformService:
 
         transform_data = self.config.get(f"models.modelContainer.{self.model_name}.transform")
         sagemaker_config = self._args()
-        
+
         if self._get_chain_input():
             input_data_file_s3path = self._get_chain_input()
             output_data_file_s3path = None

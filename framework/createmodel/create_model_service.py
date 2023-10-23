@@ -16,15 +16,14 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 # Import native libraries
-import os
 
-# Import Third-party libraries
-from sagemaker.workflow.steps import TrainingStep
 from sagemaker.model import Model
 from sagemaker.workflow.pipeline_context import PipelineSession
-
+# Import Third-party libraries
+from sagemaker.workflow.steps import TrainingStep
 # Import Custom libraries
 from utilities.logger import Logger
+
 
 ########################################################################################
 ### If the Logger class implememntation required file handler                        ###
@@ -61,17 +60,19 @@ class CreateModelService:
 
         network_config_kwargs = dict(
             enable_network_isolation=False,
-            security_group_ids= self.config.get("sagemakerNetworkSecurity.security_groups_id").split(",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
-            subnets= self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get("sagemakerNetworkSecurity.subnets", None) else None,
+            security_group_ids=self.config.get("sagemakerNetworkSecurity.security_groups_id").split(
+                ",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
+            subnets=self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get(
+                "sagemakerNetworkSecurity.subnets", None) else None,
             kms_key=self.config.get("sagemakerNetworkSecurity.kms_key"),
             encrypt_inter_container_traffic=True,
-            role = self.config.get("sagemakerNetworkSecurity.role"),
+            role=self.config.get("sagemakerNetworkSecurity.role"),
         )
         return network_config_kwargs
 
     def _get_pipeline_session(self) -> PipelineSession:
         return PipelineSession(default_bucket=self.config.get("s3Bucket"))
-    
+
     def _args(self) -> dict:
         """
         Parse method to retreive all arguments to be used to create the Model
@@ -85,14 +86,14 @@ class CreateModelService:
         # modelContainer is the key attribute where all models have been allocated.
         conf = self.config.get("models.modelContainer")
 
-
         args = dict(
             name=conf.get(f"{self.model_name}.name"),
             image_uri=conf.get(f"{self.model_name}.registry.InferenceSpecification.image_uri"),
             model_repack_flag=conf.get(f"{self.model_name}.registry.ModelRepack", "True"),
             # source_dir=conf.get(f"{self.model_name}.source_directory", os.environ["SMP_SOURCE_DIR_PATH"]),
             source_dir=conf.get(f"{self.model_name}.source_directory"),
-            entry_point= conf.get(f"{self.model_name}.transform.entry_point", "inference.py").replace("/", ".").replace(".py", ""),
+            entry_point=conf.get(f"{self.model_name}.transform.entry_point", "inference.py").replace("/", ".").replace(
+                ".py", ""),
             env={
                 "SAGEMAKER_SUBMIT_DIRECTORY": "/opt/ml/model/code",
                 "SAGEMAKER_PROGRAM": conf.get(f"{self.model_name}.transform.entry_point", "inference.py")
@@ -121,7 +122,7 @@ class CreateModelService:
         """
         # Get SegeMaker Network Configuration
         sagemaker_network_config = self._get_network_config()
-        self.logger.log_info(f"{'-'*50 } Start SageMaker Model Creation {self.model_name} {'-'*50 }")
+        self.logger.log_info(f"{'-' * 50} Start SageMaker Model Creation {self.model_name} {'-' * 50}")
         self.logger.log_info(f"SageMaker network config: {sagemaker_network_config}")
 
         # Get Arg for CreateModel Step
@@ -131,13 +132,14 @@ class CreateModelService:
         # Check ModelRepack Flag
         _model_repack_flag = args.get("model_repack_flag")
 
-        vpc_config= {}
-        if sagemaker_network_config.get("security_group_ids", None): vpc_config.update({'SecurityGroupIds': sagemaker_network_config.get("security_group_ids")})
-        if sagemaker_network_config.get("subnets", None): vpc_config.update({'Subnets': sagemaker_network_config.get("subnets")})
+        vpc_config = {}
+        if sagemaker_network_config.get("security_group_ids", None): vpc_config.update(
+            {'SecurityGroupIds': sagemaker_network_config.get("security_group_ids")})
+        if sagemaker_network_config.get("subnets", None): vpc_config.update(
+            {'Subnets': sagemaker_network_config.get("subnets")})
         if not vpc_config: vpc_config = None
 
-
-        model=''
+        model = ''
         if _model_repack_flag == "True":
             model = Model(
                 name=args["name"],

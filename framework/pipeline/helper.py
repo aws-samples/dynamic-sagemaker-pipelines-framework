@@ -34,11 +34,12 @@ def look_up_step_type_from_step_name(source_step_name: str, config: dict) -> str
 
     Returns:
         The step_type.
-    """    
-    # note: chain_input_source_step will error out if source_step does not have an optional step_type declared in sagemakerPipeline section of conf. step_type is mandatory for step_class: Processing.
+    """
+    # note: chain_input_source_step will error out if source_step does not have an optional step_type declared in
+    # sagemakerPipeline section of conf. step_type is mandatory for step_class: Processing.
     for model_name in config['models']['modelContainer'].keys():
-        steps_dict= config['models']['modelContainer'][model_name] 
-        smp_steps_dict= config['sagemakerPipeline']['models'][model_name]['steps']
+        steps_dict = config['models']['modelContainer'][model_name]
+        smp_steps_dict = config['sagemakerPipeline']['models'][model_name]['steps']
 
         for step in smp_steps_dict:
             if step['step_name'] == source_step_name:
@@ -56,7 +57,6 @@ def look_up_step_type_from_step_name(source_step_name: str, config: dict) -> str
                 else:
                     raise Exception("Only Prcoessing, Training & Transform Step can be used as chain input source.")
 
-                    
 
 def look_up_steps(source_step_name: str, steps_dict: dict) -> steps.Step:
     """
@@ -73,7 +73,8 @@ def look_up_steps(source_step_name: str, steps_dict: dict) -> steps.Step:
         for step in model_steps:
             if step.name == source_step_name:
                 return step
-            
+
+
 def look_up_step_config(source_step_name: str, smp_config: dict) -> dict:
     """
     Look up a step configuration in a dictionary of steps.
@@ -90,7 +91,8 @@ def look_up_step_config(source_step_name: str, smp_config: dict) -> dict:
             if step.get("step_name") == source_step_name:
                 step_class = step.get("step_class")
                 return source_model, step_class
-            
+
+
 def get_chain_input_file(
         source_step_name: str,
         steps_dict: dict,
@@ -128,6 +130,7 @@ def get_chain_input_file(
         )
     return chain_input_file
 
+
 def get_cache_flag(step_config: dict) -> bool:
     """
     Get the cache flag for a step configuration.
@@ -148,6 +151,7 @@ def get_cache_flag(step_config: dict) -> bool:
         chache_flag = False
     return chache_flag
 
+
 def generate_default_smp_config(config: dict) -> dict:
     """
     Generate the default SageMaker Model Parallelism configuration.
@@ -161,12 +165,12 @@ def generate_default_smp_config(config: dict) -> dict:
     model_name = config.get("models.modelName")
     model_abbreviated = model_name.replace("model", "")
     project_name = config.get("project_name")
-    
+
     try:
         default_pipeline_name = config.get(f"models.modelContainer.{model_name}.sagemakerPipeline.pipelineName")
     except Exception:
         default_pipeline_name = f"{project_name}-{model_abbreviated}-pipeline"
-    
+
     smp_ = f"""
         {{
             pipelineName: "{default_pipeline_name}",

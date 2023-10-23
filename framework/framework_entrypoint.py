@@ -1,4 +1,3 @@
-
 from pipeline.pipeline_service import PipelineService
 
 pipeline = PipelineService()

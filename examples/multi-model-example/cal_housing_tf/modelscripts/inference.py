@@ -1,24 +1,25 @@
 import json
 import os
-import pandas as pd
+
 import numpy as np
-from io import StringIO
- 
+
 print(f"My location: {os.listdir()}")
 print(f"Dir of /opt/ml: {os.listdir('/opt/ml')}")
 print(f"Dir of /opt/ml/model: {os.listdir('/opt/ml/model')}")
- 
+
 print(f"{'-' * 40} Start printing Env Var {'-' * 40}")
 for name, value in os.environ.items():
     print("{0}: {1}".format(name, value))
 print(f"{'-' * 40} Finish printing Env Var {'-' * 40}")
- 
+
 model_dir = "/opt/ml/model"
 print("numpy version", np.__version__)
- 
+
+
 def read_csv(csv):
     return np.array([[float(j) for j in i.split(",")] for i in csv.splitlines()])
- 
+
+
 def input_handler(data, context):
     """ Pre-process request input before it is sent to TensorFlow Serving REST API
     Args:
@@ -34,7 +35,7 @@ def input_handler(data, context):
     print(f"InputHandler, custom_attributes is {context.custom_attributes}")
     print(f"InputHandler, accept_header is {context.accept_header}")
     print(f"InputHandler, content_length is {context.content_length}")
- 
+
     if context.request_content_type == 'application/json':
         # pass through json (assumes it's correctly formed)
         d = data.read().decode('utf-8')
@@ -45,7 +46,8 @@ def input_handler(data, context):
         print(inputs[:10])
         input_data = {'instances': inputs.tolist()}
         return json.dumps(input_data)
-    
+
+
 def output_handler(data, context):
     """Post-process TensorFlow Serving output before it is returned to the client.
     Args:
@@ -57,14 +59,14 @@ def output_handler(data, context):
     print(f"OutputHandler, hello world!")
     status_code = data.status_code
     content = data.content
-   
-    if status_code  != 200:
+
+    if status_code != 200:
         raise ValueError(content.decode('utf-8'))
-   
+
     response_content_type = context.accept_header
     prediction = data.content
-   
+
     print(f"Prediction type is {type(prediction)}, {prediction}")
     print(f"Prediction is {prediction}")
-   
+
     return prediction, response_content_type

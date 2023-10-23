@@ -17,15 +17,13 @@
 
 # Import native libraries
 import os
-from typing import Union, Tuple
+from typing import Tuple
 
-import boto3
+from pipeline.helper import get_chain_input_file, look_up_step_type_from_step_name
 from sagemaker.estimator import Estimator
 from sagemaker.inputs import TrainingInput
 from sagemaker.workflow.pipeline_context import PipelineSession
 
-from utilities.utils import S3Utilities
-from pipeline.helper import get_chain_input_file, look_up_step_type_from_step_name
 
 class TrainingService:
     """
@@ -33,13 +31,13 @@ class TrainingService:
     """
 
     def __init__(
-            self, 
-            config: dict, 
-            model_name: str, 
-            step_config: dict, 
+            self,
+            config: dict,
+            model_name: str,
+            step_config: dict,
             model_step_dict: dict
     ) -> "TrainingService":
-    
+
         self.config = config
         self.model_name = model_name
         self.step_config = step_config
@@ -57,12 +55,14 @@ class TrainingService:
 
         network_config_kwargs = dict(
             enable_network_isolation=False,
-            security_group_ids= self.config.get("sagemakerNetworkSecurity.security_groups_id").split(",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
-            subnets= self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get("sagemakerNetworkSecurity.subnets", None) else None,
+            security_group_ids=self.config.get("sagemakerNetworkSecurity.security_groups_id").split(
+                ",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
+            subnets=self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get(
+                "sagemakerNetworkSecurity.subnets", None) else None,
             encrypt_inter_container_traffic=True,
         )
         return network_config_kwargs
-    
+
     def _get_pipeline_session(self) -> PipelineSession:
         """
         Method to retreive SageMaker pipeline session
@@ -71,7 +71,7 @@ class TrainingService:
         ----------
         - SageMaker Pipeline Session
         """
-        
+
         return PipelineSession(default_bucket=self.config.get("s3Bucket"))
 
     def _args(self) -> dict:
@@ -84,7 +84,8 @@ class TrainingService:
         """
 
         conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
-        source_dir = self.config.get(f"models.modelContainer.{self.model_name}.source_directory", os.getenv("SMP_SOURCE_DIR_PATH"))
+        source_dir = self.config.get(f"models.modelContainer.{self.model_name}.source_directory",
+                                     os.getenv("SMP_SOURCE_DIR_PATH"))
 
         args = dict(
             image_uri=conf.get("image_uri"),
@@ -105,8 +106,8 @@ class TrainingService:
         )
 
         return args
-    
-    def _get_static_input_list(self)-> list:
+
+    def _get_static_input_list(self) -> list:
         """
         Method to retreive SageMaker static inputs
 
@@ -119,10 +120,11 @@ class TrainingService:
         conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
         # Get the total number of input files
         input_files_list = list()
-        for channel in conf.get("channels", {}).keys(): input_files_list.append(conf.get(f"channels.{channel}.dataFiles", [])[0])
+        for channel in conf.get("channels", {}).keys(): input_files_list.append(
+            conf.get(f"channels.{channel}.dataFiles", [])[0])
         return input_files_list
-        
-    def _get_static_input(self, channel)-> Tuple[list,int]:
+
+    def _get_static_input(self, channel) -> Tuple[list, int]:
         """
         Method to retreive SageMaker static inputs
 
@@ -149,19 +151,19 @@ class TrainingService:
             else:
                 bucket = conf.get("channels.train.s3Bucket")
                 input_prefix = conf.get("channels.train.s3InputPrefix", "")
-                _source = os.path.join(bucket, input_prefix,"data",channel, file.get("fileName"))
-            
+                _source = os.path.join(bucket, input_prefix, "data", channel, file.get("fileName"))
+
             training_input = TrainingInput(
-                    s3_data=_source,
-                    content_type=content_type,
-                    input_mode=input_mode,
-                    distribution=distribution,
-                )
-            
+                s3_data=_source,
+                content_type=content_type,
+                input_mode=input_mode,
+                distribution=distribution,
+            )
+
             training_channel_inputs[channel] = training_input
 
         return training_channel_inputs
-    
+
     def _get_chain_input(self):
         """
         Method to retreive SageMaker chain inputs
@@ -177,36 +179,36 @@ class TrainingService:
         content_type = conf.get("content_type", None)
         input_mode = conf.get("input_mode", "File")
         distribution = conf.get("distribution", "FullyReplicated")
-        
-        
+
         for source_step_name in chain_input_source_step:
-            source_step_type= look_up_step_type_from_step_name(
+            source_step_type = look_up_step_type_from_step_name(
                 source_step_name=source_step_name,
                 config=self.config
             )
             training_channel_inputs[source_step_name] = {}
-            for channel in self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels', ["train"]):
+            for channel in self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels',
+                                                                                                          ["train"]):
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
                     steps_dict=self.model_step_dict,
-                    source_output_name= channel
+                    source_output_name=channel
                 )
 
                 training_input = TrainingInput(
-                        s3_data=chain_input_path,
-                        content_type=content_type,
-                        input_mode=input_mode,
-                        distribution=distribution,
+                    s3_data=chain_input_path,
+                    content_type=content_type,
+                    input_mode=input_mode,
+                    distribution=distribution,
                 )
-            
+
                 # dynamic_training_input.append(temp)
                 # training_channel_inputs[f"{self.model_name}-{source_step_name}"] = training_input
                 # training_channel_inputs.update({source_step_name: {channel: training_input}})
                 training_channel_inputs[source_step_name][channel] = training_input
 
         return training_channel_inputs
-    
-    def _run_training_step(self, args: dict): 
+
+    def _run_training_step(self, args: dict):
         if "/" in args["entry_point"]:
             train_source_dir = f"{args['source_directory']}/{args['entry_point'].rsplit('/', 1)[0]}"
             train_entry_point = args["entry_point"].rsplit("/", 1)[1]
@@ -236,9 +238,9 @@ class TrainingService:
             dependences=train_dependencies,
             sagemaker_session=self._get_pipeline_session()
         )
-        
+
         return estimator
-    
+
     def train_step(self):
         """
         Method to run training step
@@ -265,7 +267,7 @@ class TrainingService:
 
         train_args = estimator.fit(
             inputs=training_channel_inputs,
-            job_name = args["base_job_name"]
+            job_name=args["base_job_name"]
         )
 
         return train_args

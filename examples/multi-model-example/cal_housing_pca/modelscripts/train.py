@@ -1,14 +1,10 @@
-import argparse
-import numpy as np
 import os
+
 import pandas as pd
+from joblib import dump
 from sklearn.decomposition import PCA
-from joblib import dump, load
-
-
 
 if __name__ == "__main__":
-
     # data directories
     channel_path = "/opt/ml/input/data/calhousing-pca-Preprocessing-train"
     print(f'Training data location: {os.listdir(channel_path)}')
@@ -21,5 +17,5 @@ if __name__ == "__main__":
     print(pca.singular_values_)
 
     # save model
-    dump(pca, os.path.join(os.environ.get("SM_MODEL_DIR") , "pca_model.joblib"))
+    dump(pca, os.path.join(os.environ.get("SM_MODEL_DIR"), "pca_model.joblib"))
     print(os.listdir("/opt/ml/model/"))

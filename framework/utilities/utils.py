@@ -1,11 +1,9 @@
-import json
-
 class S3Utilities:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(S3Utilities, cls).__new__(cls)
         return cls._instance
-    
+
     @staticmethod
     def split_s3_uri(s3_uri: str) -> tuple:
         split_list = s3_uri.split("//")[1].split("/")

@@ -1,14 +1,14 @@
 import json
 
+from pipeline.model_unit import ModelUnit
 from sagemaker.workflow.model_step import ModelStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_context import PipelineSession
-
-from pipeline.model_unit import ModelUnit
 from utilities.domain import Conf
 
+
 class PipelineService:
-    
+
     def __init__(self) -> "PipelineService":
         self.config = Conf().load_conf()
         pass
@@ -19,7 +19,7 @@ class PipelineService:
             temp_chain = condition.split(" >> ")
             for i in range(len(temp_chain) - 1):
                 source_step_name = temp_chain[i]
-                dest_step_name = temp_chain[i+1]
+                dest_step_name = temp_chain[i + 1]
                 source_step = None
                 dest_step = None
                 for step in pipeline_steps:
@@ -35,7 +35,8 @@ class PipelineService:
                             dest_step.add_depends_on([source_step])
                         break
                 if source_step is None or dest_step is None:
-                    raise Exception(f"Failed when adding dependency between steps {source_step_name} and {dest_step_name}.")
+                    raise Exception(
+                        f"Failed when adding dependency between steps {source_step_name} and {dest_step_name}.")
 
     def construct_train_pipeline(self):
         model_steps_dict = {}
@@ -44,7 +45,7 @@ class PipelineService:
             model_steps_dict[model_name] = ModelUnit(
                 self.config, model_name, model_steps_dict,
             ).get_train_pipeline_steps()
-        
+
         pipeline_steps = []
         for model_name, model_unit_steps in model_steps_dict.items():
             pipeline_steps += model_unit_steps
@@ -65,7 +66,7 @@ class PipelineService:
         pipeline, pipeline_definition = self.construct_train_pipeline()
 
         with open("pipeline_definition.json", "w") as file:
-            json.dump(pipeline_definition, file)   
+            json.dump(pipeline_definition, file)
 
         pipeline.upsert(role_arn=pipeline_role)
         pipeline.start()

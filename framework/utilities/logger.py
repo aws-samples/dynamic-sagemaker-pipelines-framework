@@ -16,8 +16,8 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import logging
-import datetime
 from typing import Union, List
+
 
 class Logger:
     """
@@ -35,6 +35,7 @@ class Logger:
     - log_error(*messages: Union[str, List[str]]): Logs error messages
     - log_critical(*messages: Union[str, List[str]]): Logs critical messages
     """
+
     def __init__(self, config: Union[dict, None] = None):
         """
         Initializes the Loger class.
@@ -43,22 +44,22 @@ class Logger:
         ----------
         - config (dict): Configuration for the logger
         """
-        #Get logger
+        # Get logger
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Create the formatter
         formatter = logging.Formatter(
             "%(asctime)s :::: [Log %(name)s] :::: %(message)s",
-            datefmt = "[%Y-%m-%d %H:%M:%S %Z%z]"
+            datefmt="[%Y-%m-%d %H:%M:%S %Z%z]"
         )
-        
+
         # Create the console handler and add formatter
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(formatter)
-        
+
         # Add handlers to the loger
         self.logger.addHandler(console_handler)
-    
+
     def _log_messages(self, level: str, prefix: str, *messages: Union[str, List[str]]):
         """
         Logs messages with the specified level.
@@ -81,8 +82,8 @@ class Logger:
         - *messages: (Union[str, List[str]]): Single or List of messages
         """
         self.logger.setLevel(logging.DEBUG)
-        self._log_messages(self.logger.debug, "DEBUG   ",  *messages)
-    
+        self._log_messages(self.logger.debug, "DEBUG   ", *messages)
+
     def log_info(self, *messages: Union[str, List[str]]):
         """
         Logs informational messages
@@ -92,7 +93,7 @@ class Logger:
         - *messages: (Union[str, List[str]]): Single or List of messages
         """
         self.logger.setLevel(logging.INFO)
-        self._log_messages(self.logger.info, "INFO    " , *messages)
+        self._log_messages(self.logger.info, "INFO    ", *messages)
 
     def log_warning(self, *messages: Union[str, List[str]]):
         """
@@ -103,8 +104,8 @@ class Logger:
         - *messages: (Union[str, List[str]]): Single or List of messages
         """
         self.logger.setLevel(logging.WARNING)
-        self._log_messages(self.logger.warning, "WARNING " , *messages)
-            
+        self._log_messages(self.logger.warning, "WARNING ", *messages)
+
     def log_error(self, *messages: Union[str, List[str]]):
         """
         Logs error messages
@@ -114,8 +115,8 @@ class Logger:
         - *messages: (Union[str, List[str]]): Single or List of messages
         """
         self.logger.setLevel(logging.ERROR)
-        self._log_messages(self.logger.error, "ERROR   " , *messages)
-    
+        self._log_messages(self.logger.error, "ERROR   ", *messages)
+
     def log_critical(self, *messages: Union[str, List[str]]):
         """
         Logs critical messages
@@ -125,4 +126,4 @@ class Logger:
         - *messages: (Union[str, List[str]]): Single or List of messages
         """
         self.logger.setLevel(logging.CRITICAL)
-        self._log_messages(self.logger.critical, "CRITICAL" , *messages)
+        self._log_messages(self.logger.critical, "CRITICAL", *messages)

@@ -1,9 +1,6 @@
-import glob
-import numpy as np
 import os
+
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
 
 BASE_DIR = "/opt/ml/processing"
 CODE_DIR = os.path.join(BASE_DIR, "code")
@@ -25,8 +22,8 @@ if __name__ == "__main__":
         "medianHouseValue",
     ]
     cal_housing_df = pd.read_csv(
-        os.path.join(INPUT_DIR, "raw_data/cal_housing.data"), 
-        names=columns, 
+        os.path.join(INPUT_DIR, "raw_data/cal_housing.data"),
+        names=columns,
         header=None
     )
     X = cal_housing_df[

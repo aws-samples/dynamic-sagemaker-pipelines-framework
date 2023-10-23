@@ -15,11 +15,11 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import os
-import re
 import glob
-import yaml
+import os
 from typing import Any, Dict, Union, List
+
+import yaml
 
 
 class Conf:
@@ -64,8 +64,8 @@ class Conf:
         return DotDict(update_conf).get("conf")
 
     def _inject_env_variables(
-        self, 
-        config: Union[Dict[str, Union[Dict, List, str]], List]
+            self,
+            config: Union[Dict[str, Union[Dict, List, str]], List]
     ) -> Union[Dict, List]:
         """
         Replace dictionary TAGS by Environment Variables on a runtime
@@ -90,12 +90,12 @@ class Conf:
                 else:
                     updated_config[key] = self._replace_placeholders(value)
             return updated_config
-        
+
         elif isinstance(config, list):
             return [self._inject_env_variables(item) for item in config]
         else:
             return config
-    
+
     def _replace_placeholders(self, value: str) -> str:
         """
         Placeholder

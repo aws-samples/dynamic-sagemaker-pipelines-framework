@@ -1,11 +1,12 @@
 import glob
-import numpy as np
 import os
-import pandas as pd
 import tarfile
-from sklearn.preprocessing import StandardScaler
+
+import numpy as np
+import pandas as pd
+from joblib import load
 from sklearn.model_selection import train_test_split
-from joblib import dump, load
+from sklearn.preprocessing import StandardScaler
 
 BASE_DIR = "/opt/ml/processing"
 CODE_DIR = os.path.join(BASE_DIR, "code")
@@ -27,8 +28,8 @@ if __name__ == "__main__":
         "medianHouseValue",
     ]
     cal_housing_df = pd.read_csv(
-        os.path.join(INPUT_DIR, "raw_data/cal_housing.data"), 
-        names=columns, 
+        os.path.join(INPUT_DIR, "raw_data/cal_housing.data"),
+        names=columns,
         header=None
     )
     X = cal_housing_df[
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     pca = load("pca_model.joblib")
     x_train = pca.transform(x_train_)
     x_test = pca.transform(x_test_)
-    
+
     split_data_dir = os.path.join(BASE_DIR, "split_data")
     if not os.path.exists(split_data_dir):
         os.mkdir(split_data_dir)
@@ -62,13 +63,13 @@ if __name__ == "__main__":
     np.save(os.path.join(split_data_dir, "x_test.npy"), x_test)
     np.save(os.path.join(split_data_dir, "y_train.npy"), y_train)
     np.save(os.path.join(split_data_dir, "y_test.npy"), y_test)
-    
+
     input_files = glob.glob("{}/*.npy".format(split_data_dir))
     print("\nINPUT FILE LIST: \n{}\n".format(input_files))
     scaler = StandardScaler()
     x_train = np.load(os.path.join(split_data_dir, "x_train.npy"))
     scaler.fit(x_train)
-    
+
     train_data_output_dir = os.path.join(OUTPUT_DIR, "train/train")
     if not os.path.exists(train_data_output_dir):
         os.mkdir(train_data_output_dir)

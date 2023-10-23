@@ -1,10 +1,11 @@
 import argparse
-import numpy as np
 import os
+
+import numpy as np
 import tensorflow as tf
 
-def parse_args():
 
+def parse_args():
     parser = argparse.ArgumentParser()
 
     # hyperparameters sent by the client are passed as command-line arguments to the script
@@ -15,13 +16,13 @@ def parse_args():
     # data directories
     channel_path = "/opt/ml/input/data/calhousing-tf-Preprocessing-train"
     parser.add_argument(
-        '--train', 
-        type=str, 
+        '--train',
+        type=str,
         default=os.path.join(channel_path, "train")
     )
     parser.add_argument(
-        '--test', 
-        type=str, 
+        '--test',
+        type=str,
         default=os.path.join(channel_path, "test")
     )
 
@@ -32,25 +33,22 @@ def parse_args():
 
 
 def get_train_data(train_dir):
-
     x_train = np.load(os.path.join(train_dir, 'x_train.npy'))
     y_train = np.load(os.path.join(train_dir, 'y_train.npy'))
-    print('x train', x_train.shape,'y train', y_train.shape)
+    print('x train', x_train.shape, 'y train', y_train.shape)
 
     return x_train, y_train
 
 
 def get_test_data(test_dir):
-
     x_test = np.load(os.path.join(test_dir, 'x_test.npy'))
     y_test = np.load(os.path.join(test_dir, 'y_test.npy'))
-    print('x test', x_test.shape,'y test', y_test.shape)
+    print('x test', x_test.shape, 'y test', y_test.shape)
 
     return x_test, y_test
 
 
 def get_model():
-
     inputs = tf.keras.Input(shape=(6,))
     hidden_1 = tf.keras.layers.Dense(8, activation='tanh')(inputs)
     hidden_2 = tf.keras.layers.Dense(4, activation='sigmoid')(hidden_1)
@@ -59,7 +57,6 @@ def get_model():
 
 
 if __name__ == "__main__":
-
     args, _ = parse_args()
 
     print('Training data location: {}'.format(args.train))
@@ -71,7 +68,6 @@ if __name__ == "__main__":
     epochs = args.epochs
     learning_rate = args.learning_rate
     print('batch_size = {}, epochs = {}, learning rate = {}'.format(batch_size, epochs, learning_rate))
-
 
     model = get_model()
     optimizer = tf.keras.optimizers.SGD(learning_rate)
