@@ -4,7 +4,7 @@ This is an multi model usage example. In this example, there are two models. One
 
 ![Mutli-Model-Pipeline-DAG](./dag.png)
 
-## Mutil Model Project Structure
+## Multi Model Project Structure
 
 ```
 /root/
@@ -38,7 +38,7 @@ This is an multi model usage example. In this example, there are two models. One
 │   │	│
 │   │	└─...
 ```
-## Mutil Model Runbook
+## Multi Model Runbook
 - Step 1: Set Up Anchor Model For Multi Model Execution
 
 For this config driven sagemaker pipeline framwork, when it is used for mutli model pipeline creation, each model will have its own conf.yaml. And the anchor model is define as the model that its conf.yaml contains sagemakerPipeline configuration section. In this example,  the one and only sagemakerPipeline configuration section is defined in cal_housing_tf's conf.yaml file. Any model can be your anchor model.
