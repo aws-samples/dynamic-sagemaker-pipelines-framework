@@ -43,8 +43,6 @@ This is an multi model usage example. In this example, there are two models. One
 <br>
 <br>
 For this config driven sagemaker pipeline framwork, when it is used for mutli model pipeline creation, each model will have its own conf.yaml. And the anchor model is define as the model that its conf.yaml contains sagemakerPipeline configuration section. In this example,  the one and only sagemakerPipeline configuration section is defined in cal_housing_tf's conf.yaml file. Any model can be your anchor model.
-<br>
-<br>
 - Step 2: Set Up Environment Variables
 <br>
 <br>
@@ -52,7 +50,6 @@ Navigate to project root directory, set up env vars listed in env.env. For this 
 ```
 export SMP_MODEL_DOMAIN_CONFIGPATH=examples/multi-model-example/*/conf/conf-multi-model.yaml
 ```
-
 - Step 3: Generate Pipeline Definition & Run Pipeline
 <br>
 <br>
