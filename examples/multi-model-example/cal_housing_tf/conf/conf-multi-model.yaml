@@ -89,3 +89,5 @@ conf:
         dependencies:
             - calhousing-tf-Preprocessing >> calhousing-tf-Training >> calhousing-tf-CreateModel >> calhousing-tf-Transform >> calhousing-tf-Metrics >> calhousing-tf-Register
             - calhousing-pca-Preprocessing >> calhousing-pca-Training >> calhousing-pca-Register
+            # example: add-on customized dependency
+            - calhousing-pca-Register >> calhousing-tf-Register

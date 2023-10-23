@@ -17,7 +17,7 @@ if __name__ == "__main__":
         file_string = f.read()
     y_test_pred = json.loads(file_string)["predictions"]
     
-    test_path = "/opt/ml/processing/input/calhousing-Preprocessing-train/"
+    test_path = "/opt/ml/processing/input/calhousing-tf-Preprocessing-train/"
     print(os.listdir(test_path))
     y_test_true = np.loadtxt(os.path.join(test_path, "test/y_test.csv"))
     scores = mean_squared_error(y_test_true, y_test_pred)
