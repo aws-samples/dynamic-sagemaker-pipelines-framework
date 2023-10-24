@@ -89,12 +89,8 @@ This pattern allows you to define your training orchestration in a configuration
     SMP_S3BUCKETNAME                   (required) | AWS S3 bucket
     SMP_ROLE                           (required) | AWS SageMaker role
     SMP_MODEL_DOMAIN_CONFIGPATH        (required) | relative path for the configuration path of single-model or multi-model
-    SMP_APPLICATIONNAME                (optional)
-    SMP_BUSSINESS_UNIT                 (optional)
-    SMP_PROGRAMNAME                    (optional)
     SMP_SUBNETS                        (optional)
     SMP_SECURITYGROUPS                 (optional)
-    SMP_PROJECTNAME                    (optional)
     SMP_MODELNAME                      (optional)
     ```
 
