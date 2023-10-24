@@ -12,17 +12,17 @@ conf:
                 channels:
                     train:
                         dataFiles:
-                            - sourceName: online_shoppers_intention train
+                            - sourceName: online_shoppers_intention_train
                               fileName: s3://SMP_S3BUCKETNAME/lightGBM/train
                     test:
                         dataFiles:
-                            - sourceName: online_shoppers_intention test
+                            - sourceName: online_shoppers_intention_test
                               fileName: s3://SMP_S3BUCKETNAME/lightGBM/test
 
             registry:
                 ModelRepack: "False"
                 InferenceSpecification: 
-                    image_uri: "refer-transform/docker-to-built-inference-image"
+                    image_uri: "SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/lightgbm-inference:lightgbm-i0.0"
                     supported_content_types: 
                         - application/json
                     supported_response_MIME_types: 
