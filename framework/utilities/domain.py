@@ -15,11 +15,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import glob
 import os
-from typing import Any, Dict, Union, List
-
+import glob
 import yaml
+from typing import Any, Dict, Union, List
 
 
 class Conf:
@@ -35,9 +34,9 @@ class Conf:
         Method to load and merge all Conf files
         """
         base_conf, conf_path = self._get_framework_conf()
-        base_conf["conf"]["models"]["modelContainer"] = {}
+        base_conf["conf"]["models"] = {}
 
-        modelDomainConfigFilePath = base_conf["conf"]["models"][
+        modelDomainConfigFilePath = base_conf["conf"][
             "modelDomainConfigFilePath"
         ]
         yaml_files = glob.glob(
@@ -49,10 +48,8 @@ class Conf:
                 continue
             model_conf = self._read_yaml_file(file_path)
             # Insert Models Attibutes into Framework attribute in a runtime
-            for key, value in model_conf["conf"]["models"]["modelContainer"].items():
-                base_conf["conf"]["models"]["modelContainer"].setdefault(
-                    key, {}
-                ).update(value)
+            for key, value in model_conf["conf"]["models"].items():
+                base_conf["conf"]["models"].setdefault(key, {}).update(value)
 
             # Insert sagemakerPipeline section as a primary key
             for key, value in model_conf["conf"].items():

@@ -1,59 +1,58 @@
 ---
 conf:
     models:
-        modelContainer:
-            lgbm:
-                source_directory: lgbm
-                name: LightGBM-OnlineShopping
-                train:
-                    instance_type: ml.c5.xlarge
-                    image_uri: SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38
-                    entry_point: training/training.py
-                    base_job_name: lightgbm-train
-                    channels:
-                        train:
-                            dataFiles:
-                                - sourceName: online_shoppers_intention train
-                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/train
-                        test:
-                            dataFiles:
-                                - sourceName: online_shoppers_intention test
-                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/test
+        lgbm:
+            source_directory: lgbm
+            name: LightGBM-OnlineShopping
+            train:
+                instance_type: ml.c5.xlarge
+                image_uri: SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38
+                entry_point: training/training.py
+                base_job_name: lightgbm-train
+                channels:
+                    train:
+                        dataFiles:
+                            - sourceName: online_shoppers_intention train
+                              fileName: s3://SMP_S3BUCKETNAME/lightGBM/train
+                    test:
+                        dataFiles:
+                            - sourceName: online_shoppers_intention test
+                              fileName: s3://SMP_S3BUCKETNAME/lightGBM/test
 
-                registry:
-                    ModelRepack: "False"
-                    InferenceSpecification: 
-                        image_uri: "refer-transform/docker-to-built-inference-image"
-                        supported_content_types: 
-                            - application/json
-                        supported_response_MIME_types: 
-                            - application/json
-                        approval_status: PendingManualApproval
+            registry:
+                ModelRepack: "False"
+                InferenceSpecification: 
+                    image_uri: "refer-transform/docker-to-built-inference-image"
+                    supported_content_types: 
+                        - application/json
+                    supported_response_MIME_types: 
+                        - application/json
+                    approval_status: PendingManualApproval
 
-                transform:
-                  instance_type: ml.c5.xlarge
-                  image_uri: "refer-transform/docker-to-built-inference-image"
-                  entry_point: transform/transform.py
-                  content_type: application/x-npy
-                  channels:
-                        test:
-                            s3BucketName: SMP_S3BUCKETNAME                   
-                            dataFiles:
-                                - sourceName: online_shoppers_intention_test
-                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/test/x_test.npy
+            transform:
+              instance_type: ml.c5.xlarge
+              image_uri: "refer-transform/docker-to-built-inference-image"
+              entry_point: transform/transform.py
+              content_type: application/x-npy
+              channels:
+                    test:
+                        s3BucketName: SMP_S3BUCKETNAME                   
+                        dataFiles:
+                            - sourceName: online_shoppers_intention_test
+                              fileName: s3://SMP_S3BUCKETNAME/lightGBM/test/x_test.npy
 
-                evaluate:
-                  instance_type: ml.c5.xlarge
-                  image_uri: 'SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38'
-                  entry_point: evaluate/evaluate.py
-                  base_job_name: lgbm-evaluate
-                  content_type: application/json
-                  channels:
-                        test:
-                            s3BucketName: SMP_S3BUCKETNAME                   
-                            dataFiles:
-                                - sourceName: online_shoppers_intention_ytest
-                                  fileName: s3://SMP_S3BUCKETNAME/lightGBM/test/y_test.npy
+            evaluate:
+              instance_type: ml.c5.xlarge
+              image_uri: 'SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38'
+              entry_point: evaluate/evaluate.py
+              base_job_name: lgbm-evaluate
+              content_type: application/json
+              channels:
+                    test:
+                        s3BucketName: SMP_S3BUCKETNAME                   
+                        dataFiles:
+                            - sourceName: online_shoppers_intention_ytest
+                              fileName: s3://SMP_S3BUCKETNAME/lightGBM/test/y_test.npy
 
     sagemakerPipeline:
         pipelineName: lgbm-test

@@ -1,48 +1,47 @@
 ---
 conf:
   models:
-    modelContainer:
-      falcon40b-finetuneable:
-        source_directory: llm-text-summarization
-        name: Falcon40b-Summarization
-        
-        preprocess:
-          image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
-          entry_point: preprocessing/preprocessing.py
-          base_job_name: falcon-text-summarization-preprocess
-          channels:
-            training:
-              dataFiles:
-                - sourceName: raw-prompts-train
-                  fileName:  s3://${SMP_S3BUCKETNAME}/falcon40b-summarization/input/samsum-train.arrow
-            testing:
-              dataFiles:
-                - sourceName: raw-prompts-test
-                  fileName:  s3://${SMP_S3BUCKETNAME}/falcon40b-summarization/input/samsum-test.arrow
-            
-        train:
-          image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
-          entry_point: training/training.py
-          base_job_name: falcon-text-summarization-tuning
-          instance_type: ml.g5.12xlarge
-          volume_size_in_gb: 1024
-          max_runtime_seconds: 86400
-
+    falcon40b-finetuneable:
+      source_directory: llm-text-summarization
+      name: Falcon40b-Summarization
+      
+      preprocess:
+        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
+        entry_point: preprocessing/preprocessing.py
+        base_job_name: falcon-text-summarization-preprocess
+        channels:
+          training:
+            dataFiles:
+              - sourceName: raw-prompts-train
+                fileName:  s3://${SMP_S3BUCKETNAME}/falcon40b-summarization/input/samsum-train.arrow
+          testing:
+            dataFiles:
+              - sourceName: raw-prompts-test
+                fileName:  s3://${SMP_S3BUCKETNAME}/falcon40b-summarization/input/samsum-test.arrow
           
-        transform:
+      train:
+        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
+        entry_point: training/training.py
+        base_job_name: falcon-text-summarization-tuning
+        instance_type: ml.g5.12xlarge
+        volume_size_in_gb: 1024
+        max_runtime_seconds: 86400
+
+        
+      transform:
+        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-gpu-py39-cu117-ubuntu20.04
+        entry_point: transform/inference.py
+
+
+      registry:
+        ModelRepack: "False"
+        InferenceSpecification: 
           image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-gpu-py39-cu117-ubuntu20.04
-          entry_point: transform/inference.py
-
-
-        registry:
-          ModelRepack: "False"
-          InferenceSpecification: 
-            image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-gpu-py39-cu117-ubuntu20.04
-            supported_content_types: 
-                - application/json
-            supported_response_MIME_types: 
-                - application/json
-            approval_status: PendingManualApproval
+          supported_content_types: 
+              - application/json
+          supported_response_MIME_types: 
+              - application/json
+          approval_status: PendingManualApproval
 
 
   sagemakerPipeline:

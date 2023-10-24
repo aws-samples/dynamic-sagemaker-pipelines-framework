@@ -1,29 +1,28 @@
 ---
 conf:
     models:
-        modelContainer:
-            calhousingpca:
-                source_directory: examples/multi-model-example/cal_housing_pca/modelscripts
-                name: calhousingpca
-                preprocess:
-                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
-                    entry_point: preprocess.py
-                    channels:
-                        train:
-                            dataFiles:
-                                - sourceName: raw_data
-                                  fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
+        calhousingpca:
+            source_directory: examples/multi-model-example/cal_housing_pca/modelscripts
+            name: calhousingpca
+            preprocess:
+                image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                entry_point: preprocess.py
+                channels:
+                    train:
+                        dataFiles:
+                            - sourceName: raw_data
+                                fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
 
-                train:
-                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
-                    entry_point: train.py
+            train:
+                image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                entry_point: train.py
 
-                registry:
-                    ModelRepack: "False"
-                    InferenceSpecification: 
-                        image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
-                        supported_content_types: 
-                            - application/json
-                        supported_response_MIME_types: 
-                            - application/json
-                        approval_status: PendingManualApproval
+            registry:
+                ModelRepack: "False"
+                InferenceSpecification: 
+                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                    supported_content_types: 
+                        - application/json
+                    supported_response_MIME_types: 
+                        - application/json
+                    approval_status: PendingManualApproval

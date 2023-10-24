@@ -1,43 +1,42 @@
 ---
 conf:
     models:
-        modelContainer:
-            calhousing:
-                source_directory: examples/tf/modelscripts
-                name: calhousing
-                preprocess:
-                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
-                    entry_point: preprocess.py
-                    channels:
-                        train:
-                            dataFiles:
-                                - sourceName: raw_data
-                                  fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
-                train:
-                    image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-training:2.11.0-cpu-py39
-                    entry_point: train.py
+        calhousing:
+            source_directory: examples/tf/modelscripts
+            name: calhousing
+            preprocess:
+                image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                entry_point: preprocess.py
+                channels:
+                    train:
+                        dataFiles:
+                            - sourceName: raw_data
+                              fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
+            train:
+                image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-training:2.11.0-cpu-py39
+                entry_point: train.py
 
-                registry:
-                    ModelRepack: "False"
-                    InferenceSpecification: 
-                        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
-                        supported_content_types: 
-                            - application/json
-                        supported_response_MIME_types: 
-                            - application/json
-                        approval_status: PendingManualApproval
+            registry:
+                ModelRepack: "False"
+                InferenceSpecification: 
+                    image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
+                    supported_content_types: 
+                        - application/json
+                    supported_response_MIME_types: 
+                        - application/json
+                    approval_status: PendingManualApproval
 
-                transform:
-                  image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
-                  entry_point: inference.py
-                  channels: 
-                      train:
+            transform:
+              image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
+              entry_point: inference.py
+              channels: 
+                  train:
 
-                evaluate:
-                  image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
-                  entry_point: evaluate.py
-                  channels: train
-                  content_type: application/json
+            evaluate:
+              image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+              entry_point: evaluate.py
+              channels: train
+              content_type: application/json
 
 
     sagemakerPipeline:
