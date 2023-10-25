@@ -36,8 +36,10 @@ class RegisterModelService:
         if step_metrics:
             model_metrics = ModelMetrics(
                 model_statistics=MetricsSource(
-                    content_type=self.config.get(f"models.{self.model_name}.evaluate.content_type",
-                                                 "application/json"),
+                    content_type=self.config.get(
+                        f"models.{self.model_name}.evaluate.content_type", 
+                        "application/json"
+                    ),
                     s3_uri="{}{}.json".format(
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"],
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["OutputName"],
@@ -56,8 +58,10 @@ class RegisterModelService:
             transform_instances=inference_spec_dict.get("SupportedTransformInstanceTypes", ["ml.m5.2xlarge"]),
             model_package_group_name=f"{self.config.get('models.projectName')}-{self.model_name}",
             marketplace_cert=False,
-            description=model_package_dict.get("ModelPackageDescription",
-                                               "Default Model Package Description. Please add custom descriptioon in your conf.yaml file"),
+            description=model_package_dict.get(
+                "ModelPackageDescription",
+                "Default Model Package Description. Please add custom descriptioon in your conf.yaml file"
+            ),
             customer_metadata_properties={
                 "PIPELINE_ARN": ExecutionVariables.PIPELINE_EXECUTION_ARN,
             },

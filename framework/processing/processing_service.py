@@ -92,8 +92,10 @@ class ProcessingService:
 
         # parse main conf dictionary
         conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
-        source_dir = self.config.get(f"models.{self.model_name}.source_directory",
-                                     os.getenv("SMP_SOURCE_DIR_PATH"))
+        source_dir = self.config.get(
+            f"models.{self.model_name}.source_directory", 
+            os.getenv("SMP_SOURCE_DIR_PATH")
+        )
 
         args = dict(
             image_uri=conf.get("image_uri"),
@@ -231,8 +233,7 @@ class ProcessingService:
                 config=self.config
             )
 
-            for channel in self.config["models"][self.model_name][source_step_type].get('channels',
-                                                                                                          ["train"]):
+            for channel in self.config["models"][self.model_name][source_step_type].get('channels',["train"]):
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
                     steps_dict=self.model_step_dict,
@@ -276,16 +277,15 @@ class ProcessingService:
         ----------
         - SageMaker Processing Outputs list
         """
-        processing_conf = self.config.get(
-            f"models.{self.model_name}.{self.step_config.get('step_type')}")
+        processing_conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
         processing_outputs = []
         processing_output_local_filepath = processing_conf.get("location.outputLocalFilepath",
                                                                "/opt/ml/processing/output")
 
-        source_step_type = self.step_config['step_type']
+        source_step_type = self.step_config["step_type"]
 
         output_names = list(
-            self.config['models'][self.model_name][source_step_type].get('channels', ["train"]))
+            self.config["models"][self.model_name][source_step_type].get('channels', ["train"]))
 
         for output_name in output_names:
             temp = ProcessingOutput(
@@ -322,7 +322,7 @@ class ProcessingService:
         entrypoint_command = args["entry_point"].replace("/", ".").replace(".py", "")
 
         framework_processor = FrameworkProcessor(
-            image_uri=args['image_uri'],
+            image_uri=args["image_uri"],
             framework_version=args["framework_version"],
             estimator_cls=estimator.SKLearn,
             role=args["role"],

@@ -84,8 +84,10 @@ class TrainingService:
         """
 
         conf = self.config.get(f"models.{self.model_name}.{self.domain_section}")
-        source_dir = self.config.get(f"models.{self.model_name}.source_directory",
-                                     os.getenv("SMP_SOURCE_DIR_PATH"))
+        source_dir = self.config.get(
+            f"models.{self.model_name}.source_directory",
+            os.getenv("SMP_SOURCE_DIR_PATH")
+        )
 
         args = dict(
             image_uri=conf.get("image_uri"),
@@ -184,8 +186,7 @@ class TrainingService:
                 config=self.config
             )
             training_channel_inputs[source_step_name] = {}
-            for channel in self.config['models'][self.model_name][source_step_type].get('channels',
-                                                                                                          ["train"]):
+            for channel in self.config["models"][self.model_name][source_step_type].get("channels", ["train"]):
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
                     steps_dict=self.model_step_dict,
