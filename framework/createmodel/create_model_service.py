@@ -83,8 +83,7 @@ class CreateModelService:
         """
 
         # parse main conf dictionary
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get("models.modelContainer")
+        conf = self.config.get("models")
 
         args = dict(
             name=conf.get(f"{self.model_name}.name"),

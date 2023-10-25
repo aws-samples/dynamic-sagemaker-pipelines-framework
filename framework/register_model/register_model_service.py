@@ -30,13 +30,13 @@ class RegisterModelService:
 
     def register_model(self, step_metrics: ProcessingStep, step_train: TrainingStep) -> ModelPackage:
         create_model_service = CreateModelService(self.config, self.model_name)
-        model_package_dict = self.config.get(f"models.modelContainer.{self.model_name}.registry")
+        model_package_dict = self.config.get(f"models.{self.model_name}.registry")
         model = create_model_service.create_model(step_train=step_train)
 
         if step_metrics:
             model_metrics = ModelMetrics(
                 model_statistics=MetricsSource(
-                    content_type=self.config.get(f"models.modelContainer.{self.model_name}.evaluate.content_type",
+                    content_type=self.config.get(f"models.{self.model_name}.evaluate.content_type",
                                                  "application/json"),
                     s3_uri="{}{}.json".format(
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"],

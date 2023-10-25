@@ -37,8 +37,8 @@ def look_up_step_type_from_step_name(source_step_name: str, config: dict) -> str
     """
     # note: chain_input_source_step will error out if source_step does not have an optional step_type declared in
     # sagemakerPipeline section of conf. step_type is mandatory for step_class: Processing.
-    for model_name in config['models']['modelContainer'].keys():
-        steps_dict = config['models']['modelContainer'][model_name]
+    for model_name in config['models'].keys():
+        steps_dict = config['models'][model_name]
         smp_steps_dict = config['sagemakerPipeline']['models'][model_name]['steps']
 
         for step in smp_steps_dict:
@@ -167,7 +167,7 @@ def generate_default_smp_config(config: dict) -> dict:
     project_name = config.get("project_name")
 
     try:
-        default_pipeline_name = config.get(f"models.modelContainer.{model_name}.sagemakerPipeline.pipelineName")
+        default_pipeline_name = config.get(f"models.{model_name}.sagemakerPipeline.pipelineName")
     except Exception:
         default_pipeline_name = f"{project_name}-{model_abbreviated}-pipeline"
 

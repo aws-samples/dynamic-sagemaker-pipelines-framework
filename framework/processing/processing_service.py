@@ -91,9 +91,8 @@ class ProcessingService:
         """
 
         # parse main conf dictionary
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
-        source_dir = self.config.get(f"models.modelContainer.{self.model_name}.source_directory",
+        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
+        source_dir = self.config.get(f"models.{self.model_name}.source_directory",
                                      os.getenv("SMP_SOURCE_DIR_PATH"))
 
         args = dict(
@@ -127,8 +126,7 @@ class ProcessingService:
         - SageMaker Processing Inputs list
         
         """
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
+        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
         # Get the total number of input files
         input_files_list = list()
         for channel in conf.get("channels", {}).keys():
@@ -147,8 +145,7 @@ class ProcessingService:
         
         """
         # parse main conf dictionary
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
+        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
         args = self._args()
         # Get the total number of input files
         input_files_list = self._get_static_input_list()
@@ -191,7 +188,7 @@ class ProcessingService:
         If there are more than 7 input data files, Manifest file needs to
         be used to reference ProcessingInput data.
         """
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
+        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
         bucket = conf.get("channels.train.s3Bucket")
         input_prefix = conf.get("channels.train.s3InputPrefix", "")
         input_local_file_path = conf.get("inputLocalFilepath", "/opt/ml/processing/input")
@@ -234,7 +231,7 @@ class ProcessingService:
                 config=self.config
             )
 
-            for channel in self.config["models"]["modelContainer"][self.model_name][source_step_type].get('channels',
+            for channel in self.config["models"][self.model_name][source_step_type].get('channels',
                                                                                                           ["train"]):
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
@@ -280,7 +277,7 @@ class ProcessingService:
         - SageMaker Processing Outputs list
         """
         processing_conf = self.config.get(
-            f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
+            f"models.{self.model_name}.{self.step_config.get('step_type')}")
         processing_outputs = []
         processing_output_local_filepath = processing_conf.get("location.outputLocalFilepath",
                                                                "/opt/ml/processing/output")
@@ -288,7 +285,7 @@ class ProcessingService:
         source_step_type = self.step_config['step_type']
 
         output_names = list(
-            self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels', ["train"]))
+            self.config['models'][self.model_name][source_step_type].get('channels', ["train"]))
 
         for output_name in output_names:
             temp = ProcessingOutput(

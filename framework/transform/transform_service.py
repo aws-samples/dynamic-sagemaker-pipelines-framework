@@ -79,8 +79,7 @@ class TransformService:
         """
 
         # parse main conf dictionary
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get("models.modelContainer")
+        conf = self.config.get("models")
 
         args = dict(
             image_uri=conf.get(f"{self.model_name}.transform.image_uri"),
@@ -160,7 +159,7 @@ class TransformService:
         ----------
         - SageMaker Processing Inputs list
         """
-        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.transform.channels", {"train": []})
+        channels_conf = self.config.get(f"models.{self.model_name}.transform.channels", {"train": []})
         if len(channels_conf.keys()) != 1:
             raise Exception("Transform step can only have one channel.")
         channel_name = list(channels_conf.keys())[0]
@@ -272,7 +271,7 @@ class TransformService:
         sagemaker_network_config = self._get_network_config()
         self.logger.log_info(f"SageMaker network config: {sagemaker_network_config}")
 
-        transform_data = self.config.get(f"models.modelContainer.{self.model_name}.transform")
+        transform_data = self.config.get(f"models.{self.model_name}.transform")
         sagemaker_config = self._args()
 
         if self._get_chain_input():

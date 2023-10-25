@@ -11,7 +11,7 @@ conf:
                     train:
                         dataFiles:
                             - sourceName: raw_data
-                                fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
+                              fileName: s3://SMP_S3BUCKETNAME/tf2-california-housing-pipelines/traindata/cal_housing.data
 
             train:
                 image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
