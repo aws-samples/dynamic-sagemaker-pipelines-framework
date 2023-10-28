@@ -1,4 +1,4 @@
 sagemaker
 boto3
 pyhocon
-yaml
+PyYAML
