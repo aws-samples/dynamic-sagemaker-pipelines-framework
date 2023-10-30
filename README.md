@@ -126,7 +126,7 @@ This pattern allows you to define your training orchestration in a configuration
 
 Create a model level root folder in the repo root(ref. lgbm)
 Create a conf/conf.yaml. The following breaks down sections of the conf.
-- [X] TODO modify this description to add anchor conf, modelDomainConfigFilePath settings for single and multi-model
+- [X] TODO modify this description to add anchor conf, modelConfigFilePath settings for single and multi-model
 This pattern entrypoint picks up all conf.yaml files in model level folders and spins up Sagemaker Pipelines for those.
 
  * **_conf_**:

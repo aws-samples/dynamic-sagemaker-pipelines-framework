@@ -2,7 +2,7 @@
 conf:
   s3Bucket: SMP_S3BUCKETNAME
   modelName: SMP_MODELNAME
-  modelDomainConfigFilePath: SMP_MODEL_DOMAIN_CONFIGPATH
+  modelConfigFilePath: SMP_MODEL_CONFIGPATH
   sagemakerNetworkSecurity:
     subnets: SMP_SUBNETS
     role: SMP_ROLE

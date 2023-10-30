@@ -36,11 +36,11 @@ class Conf:
         base_conf, conf_path = self._get_framework_conf()
         base_conf["conf"]["models"] = {}
 
-        modelDomainConfigFilePath = base_conf["conf"][
-            "modelDomainConfigFilePath"
+        modelConfigFilePath = base_conf["conf"][
+            "modelConfigFilePath"
         ]
         yaml_files = glob.glob(
-            f"{self._get_parent_dir()}/{modelDomainConfigFilePath}", recursive=True
+            f"{self._get_parent_dir()}/{modelConfigFilePath}", recursive=True
         )
 
         for file_path in yaml_files:
