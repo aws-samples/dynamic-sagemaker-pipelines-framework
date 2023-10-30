@@ -91,7 +91,6 @@ This pattern allows you to define your training orchestration in a configuration
     SMP_MODEL_DOMAIN_CONFIGPATH        (required) | relative path for the configuration path of single-model or multi-model
     SMP_SUBNETS                        (optional)
     SMP_SECURITYGROUPS                 (optional)
-    SMP_MODELNAME                      (optional)
     ```
 
     - Note:
