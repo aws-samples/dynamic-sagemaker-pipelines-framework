@@ -2,7 +2,7 @@
 This pattern allows you to define your training orchestration in a configuration(yaml) file to define/update and start a Sagemaker Pipeline
 
 ### How do I use this pattern for executing Sagemaker Pipelines?
-* The pattern load single or multi conf.yaml base on the environment variable `SMP_MODEL_DOMAIN_CONFIGPATH` , updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
+* The pattern load single or multi conf.yaml base on the environment variable `SMP_MODEL_CONFIGPATH` , updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
 
 #### Steps
 
@@ -88,15 +88,15 @@ This pattern allows you to define your training orchestration in a configuration
     SMP_REGION                         (required) | AWS Region where SageMaker Pipeline is executed
     SMP_S3BUCKETNAME                   (required) | AWS S3 bucket
     SMP_ROLE                           (required) | AWS SageMaker role
-    SMP_MODEL_DOMAIN_CONFIGPATH        (required) | relative path for the configuration path of single-model or multi-model
+    SMP_MODEL_CONFIGPATH               (required) | relative path for the configuration path of single-model or multi-model
     SMP_SUBNETS                        (optional)
     SMP_SECURITYGROUPS                 (optional)
     ```
 
     - Note:
-    > **single-model** example: `SMP_MODEL_DOMAIN_CONFIGPATH="lgbm/conf/conf.yaml" `
+    > **single-model** example: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
 
-    > **multi-model**  example: `SMP_MODEL_DOMAIN_CONFIGPATH="*/conf/conf.yaml"  `
+    > **multi-model**  example: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
 
     1. Environment Variables need to exists before execute the framework, and how to export those will depend on every preference. To avoid make public environment variables that contain credentials and to make easy to use on local testing we provide an `env.env` file where you can specified the values for those.  
     
