@@ -26,24 +26,6 @@ This pattern allows you to define your training orchestration in a configuration
     |       └── evaluate.py
     └── README.md
     ```
-    _Desire Structure_
-
-    ```
-    <MODEL-MAIN-DIR>
-    .
-    ├── MODEL-DIR
-    |   ├── conf
-    |   |    └── conf.yaml
-    |   ├── preprocess
-    |   |   └── preprocess.py
-    |   ├── train
-    |   |   └── train.py
-    |   ├── transform
-    |   |   └── transform.py
-    |   └── evaluate
-    |       └── evaluate.py
-    └── README.md
-    ```
 
 1. Get the source code needed  
     1. Clone `  dynamic-model-training-with-amazon-sagemaker-pipelines Framework` and persisted into a training folder. (For this example we will use aws-train folder)  
