@@ -21,7 +21,7 @@ from createmodel.create_model_service import CreateModelService
 from modelmetrics.model_metrics_service import ModelMetricsService
 from pipeline.helper import get_cache_flag
 from processing.processing_service import ProcessingService
-from register_model.register_model_service import RegisterModelService
+from registermodel.register_model_service import RegisterModelService
 from sagemaker.workflow.model_step import ModelStep
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
