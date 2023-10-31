@@ -198,7 +198,7 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                                                      PendingManualApproval | Rejected | Approved
         ```
 
-            * <font size="1"> **NOTE:** CreateModel step is implicit and does not need to be defined here. It can be declared directly in the _sagemakerPipeline_ section.</font>
+        * <font size="1"> **NOTE:** CreateModel step is implicit and does not need to be defined here. It can be declared directly in the _sagemakerPipeline_ section.</font>
               
         * **[transform](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)** <font size="1">  
 
