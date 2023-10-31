@@ -1,12 +1,11 @@
 import glob
-import os
-import tarfile
-
 import numpy as np
+import os
 import pandas as pd
-from joblib import load
-from sklearn.model_selection import train_test_split
+import tarfile
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from joblib import dump, load
 
 BASE_DIR = "/opt/ml/processing"
 CODE_DIR = os.path.join(BASE_DIR, "code")

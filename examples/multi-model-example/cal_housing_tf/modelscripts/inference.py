@@ -1,7 +1,8 @@
 import json
 import os
-
+import pandas as pd
 import numpy as np
+from io import StringIO
 
 print(f"My location: {os.listdir()}")
 print(f"Dir of /opt/ml: {os.listdir('/opt/ml')}")
@@ -15,10 +16,8 @@ print(f"{'-' * 40} Finish printing Env Var {'-' * 40}")
 model_dir = "/opt/ml/model"
 print("numpy version", np.__version__)
 
-
 def read_csv(csv):
     return np.array([[float(j) for j in i.split(",")] for i in csv.splitlines()])
-
 
 def input_handler(data, context):
     """ Pre-process request input before it is sent to TensorFlow Serving REST API
@@ -47,7 +46,6 @@ def input_handler(data, context):
         input_data = {'instances': inputs.tolist()}
         return json.dumps(input_data)
 
-
 def output_handler(data, context):
     """Post-process TensorFlow Serving output before it is returned to the client.
     Args:
@@ -60,7 +58,7 @@ def output_handler(data, context):
     status_code = data.status_code
     content = data.content
 
-    if status_code != 200:
+    if status_code  != 200:
         raise ValueError(content.decode('utf-8'))
 
     response_content_type = context.accept_header

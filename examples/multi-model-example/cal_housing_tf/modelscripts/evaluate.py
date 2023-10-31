@@ -1,11 +1,16 @@
-import json
 import os
-import pathlib
-
+import json
+import subprocess
+import sys
 import numpy as np
+import pandas
+import pathlib
+import tarfile
 from sklearn.metrics import mean_squared_error
 
+
 if __name__ == "__main__":
+
     pred_path = "/opt/ml/processing/input/calhousing-tf-Transform-train/"
     print(os.listdir(pred_path))
     with open(os.path.join(pred_path, "x_test.csv.out")) as f:
