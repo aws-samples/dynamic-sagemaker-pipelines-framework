@@ -126,26 +126,26 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.ProcessingStep)**
 
             ```
-            preprocess:                            <------------- Preprocess Section (Optional)
-                image_uri:                         <------------- Field Required
-                entry_point:                       <------------- Field Required
-                base_job_name:                     <------------- Field OPTIONAL
-                instance_count:                    <------------- Field OPTIONAL, default value: 1
-                instance_type:                     <------------- Field OPTIONAL, default value: "ml.m5.2xlarge"
-                volume_size_in_gb:                 <------------- Field OPTIONAL, default value: 32
-                max_runtime_seconds:               <------------- Field OPTIONAL, default value: 3000
-                tags:                              <------------- Field OPTIONAL, default value: None
-                env:                               <------------- Field OPTIONAL, default value: None
-                framework_version:                 <------------- Field OPTIONAL, default value: "0"
-                s3_data_distribution_type:         <------------- Field OPTIONAL, default value: "FullyReplicated"
-                s3_data_type:                      <------------- Field OPTIONAL, default value: "S3Prefix"
-                s3_input_mode:                     <------------- Field OPTIONAL, default value: "File"
-                s3_upload_mode:                    <------------- Field OPTIONAL, default value: "EndOfJob"
+            preprocess:                            <-- Preprocess Section (Optional)
+                image_uri:                         <-- Field Required
+                entry_point:                       <-- Field Required
+                base_job_name:                     <-- Field OPTIONAL
+                instance_count:                    <-- Field OPTIONAL, default value: 1
+                instance_type:                     <-- Field OPTIONAL, default value: "ml.m5.2xlarge"
+                volume_size_in_gb:                 <-- Field OPTIONAL, default value: 32
+                max_runtime_seconds:               <-- Field OPTIONAL, default value: 3000
+                tags:                              <-- Field OPTIONAL, default value: None
+                env:                               <-- Field OPTIONAL, default value: None
+                framework_version:                 <-- Field OPTIONAL, default value: "0"
+                s3_data_distribution_type:         <-- Field OPTIONAL, default value: "FullyReplicated"
+                s3_data_type:                      <-- Field OPTIONAL, default value: "S3Prefix"
+                s3_input_mode:                     <-- Field OPTIONAL, default value: "File"
+                s3_upload_mode:                    <-- Field OPTIONAL, default value: "EndOfJob"
                 channels:
                     train:
                         dataFiles:
-                            - sourceName:          <------------- Field OPTIONAL
-                                fileName:          <------------- Field Required
+                            - sourceName:          <-- Field OPTIONAL
+                                fileName:          <-- Field Required
             ```
 
             * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_"
@@ -155,27 +155,27 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TrainingStep)**
 
             ```
-            train:                                 <------------- Training Section
-                image_uri:                         <------------- Field Required 
-                entry_point:                       <------------- Field Required 
-                base_job_name:                     <------------- Field OPTIONAL
-                instance_count:                    <------------- Field OPTIONAL, default value: 1
-                instance_type:                     <------------- Field OPTIONAL, default value: "ml.m5.2xlarge"
-                volume_size_in_gb:                 <------------- Field OPTIONAL, default value: 32
-                max_runtime_seconds:               <------------- Field OPTIONAL, default value: 3000
-                tags:                              <------------- Field OPTIONAL, default value: None
-                env:                               <------------- Field OPTIONAL, default value: None
-                hyperparams:                       <------------- Field OPTIONAL, default value: None
-                model_data_uri:                    <------------- Field OPTIONAL, default value: None
+            train:                                 <-- Training Section
+                image_uri:                         <-- Field Required 
+                entry_point:                       <-- Field Required 
+                base_job_name:                     <-- Field OPTIONAL
+                instance_count:                    <-- Field OPTIONAL, default value: 1
+                instance_type:                     <-- Field OPTIONAL, default value: "ml.m5.2xlarge"
+                volume_size_in_gb:                 <-- Field OPTIONAL, default value: 32
+                max_runtime_seconds:               <-- Field OPTIONAL, default value: 3000
+                tags:                              <-- Field OPTIONAL, default value: None
+                env:                               <-- Field OPTIONAL, default value: None
+                hyperparams:                       <-- Field OPTIONAL, default value: None
+                model_data_uri:                    <-- Field OPTIONAL, default value: None
                 channels:
-                    train:                         <------------- Train Channel (required)
+                    train:                         <-- Train Channel (required)
                         dataFiles:
-                            - sourceName:          <------------- Field OPTIONAL
-                                fileName:          <------------- Field OPTIONAL
-                    test:                          <------------- Test Channel (optional)
+                            - sourceName:          <-- Field OPTIONAL
+                                fileName:          <-- Field OPTIONAL
+                    test:                          <-- Test Channel (optional)
                         dataFiles:
-                            - sourceName:          <------------- Field OPTIONAL
-                                fileName:          <------------- Field OPTIONAL
+                            - sourceName:          <-- Field OPTIONAL
+                                fileName:          <-- Field OPTIONAL
             ```
 
             * dataFiles loaded on conatiner at "_/opt/ml/input/data/{channelName}/_"(also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
@@ -188,12 +188,13 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
             registry:
                 ModelRepack: "False"
                 InferenceSpecification: 
-                    image_uri:                       <------------- Field Required 
+                    image_uri:                       <-- Field Required 
                     supported_content_types: 
-                        - application/json           <------------- Field Required 
+                        - application/json           <-- Field Required 
                     supported_response_MIME_types: 
-                        - application/json           <------------- Field Required 
-                    approval_status:                 <------------- Field Required, valid values: PendingManualApproval | Rejected | Approved
+                        - application/json           <-- Field Required 
+                    approval_status:                 <-- Field Required, 
+                                                         valid values: PendingManualApproval | Rejected | Approved
             ```
 
             * <font size="1"> **NOTE:** CreateModel step is implicit and does not need to be defined here. It can be declared directly in the _sagemakerPipeline_ section.</font>
@@ -204,29 +205,29 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TransformStep)**
 
             ```
-            transform:                           <------------- Transform Section
-                image_uri:                       <------------- Field Required 
-                base_job_name:                   <------------- Field OPTIONAL, default value: "default-transform-job-name"
-                instance_count:                  <------------- Field OPTIONAL, default value: 1
-                instance_type:                   <------------- Field OPTIONAL, default value: "ml.m5.2xlarge"
-                strategy:                        <------------- Field OPTIONAL, default value: None
-                assemble_with:                   <------------- Field OPTIONAL, default value: None
-                join_source:                     <------------- Field OPTIONAL, default value: None
-                split_type:                      <------------- Field OPTIONAL, default value: None
-                content_type:                    <------------- Field OPTIONAL, default value: "text/csv"
-                max_payload:                     <------------- Field OPTIONAL, default value: None
-                volume_size:                     <------------- Field OPTIONAL, default value: 50
-                max_runtime_in_seconds:          <------------- Field OPTIONAL, default value: 3600
-                input_filter:                    <------------- Field OPTIONAL, default value: None
-                output_filter:                   <------------- Field OPTIONAL, default value: None
-                tags:                            <------------- Field OPTIONAL, default value: None
-                env:                             <------------- Field OPTIONAL, default value: None
+            transform:                           <-- Transform Section
+                image_uri:                       <-- Field Required 
+                base_job_name:                   <-- Field OPTIONAL, default value: "default-transform-job-name"
+                instance_count:                  <-- Field OPTIONAL, default value: 1
+                instance_type:                   <-- Field OPTIONAL, default value: "ml.m5.2xlarge"
+                strategy:                        <-- Field OPTIONAL, default value: None
+                assemble_with:                   <-- Field OPTIONAL, default value: None
+                join_source:                     <-- Field OPTIONAL, default value: None
+                split_type:                      <-- Field OPTIONAL, default value: None
+                content_type:                    <-- Field OPTIONAL, default value: "text/csv"
+                max_payload:                     <-- Field OPTIONAL, default value: None
+                volume_size:                     <-- Field OPTIONAL, default value: 50
+                max_runtime_in_seconds:          <-- Field OPTIONAL, default value: 3600
+                input_filter:                    <-- Field OPTIONAL, default value: None
+                output_filter:                   <-- Field OPTIONAL, default value: None
+                tags:                            <-- Field OPTIONAL, default value: None
+                env:                             <-- Field OPTIONAL, default value: None
                 channels:
                     test:
                         s3BucketName: 
                         dataFiles:
-                            - sourceName:        <------------- Field OPTIONAL
-                                fileName:        <------------- Field OPTIONAL
+                            - sourceName:        <-- Field OPTIONAL
+                                fileName:        <-- Field OPTIONAL
             ```
             * **[s3BucketName](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L132)**: s3 bucket for the results of the batch transform job. Also used to stage local input files pointed in _fileName_
             * **[inputBucketPrefix](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L131)**: an s3 bucket prefix appended to _s3BucketName_ used for results of the batch transform job. Also used to stage local input files pointed in _fileName_
@@ -236,27 +237,27 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.ModelMetrics)**
 
             ```
-            evaluate:                               <------------- Evaluate Section
-                image_uri:                          <------------- Field Required 
-                entry_point:                        <------------- Field Required 
-                base_job_name:                      <------------- Field OPTIONAL 
-                instance_count:                     <------------- Field OPTIONAL, default value: 1
-                instance_type:                      <------------- Field OPTIONAL, default value: "ml.m5.2xlarge"
-                strategy:                           <------------- Field OPTIONAL, default value: "SingleRecord"
-                max_payload:                        <------------- Field OPTIONAL, default value: None
-                volume_size_in_gb:                  <------------- Field OPTIONAL, default value: 50
-                max_runtime_in_seconds:             <------------- Field OPTIONAL, default value: 3600
-                s3_data_distribution_type:          <------------- Field OPTIONAL, default value: "FullyReplicated"
-                s3_data_type:                       <------------- Field OPTIONAL, default value: "S3Prefix"
-                s3_input_mode:                      <------------- Field OPTIONAL, default value: "File"
-                tags:                               <------------- Field OPTIONAL, default value: None
-                env:                                <------------- Field OPTIONAL, default value: None
+            evaluate:                               <-- Evaluate Section
+                image_uri:                          <-- Field Required 
+                entry_point:                        <-- Field Required 
+                base_job_name:                      <-- Field OPTIONAL 
+                instance_count:                     <-- Field OPTIONAL, default value: 1
+                instance_type:                      <-- Field OPTIONAL, default value: "ml.m5.2xlarge"
+                strategy:                           <-- Field OPTIONAL, default value: "SingleRecord"
+                max_payload:                        <-- Field OPTIONAL, default value: None
+                volume_size_in_gb:                  <-- Field OPTIONAL, default value: 50
+                max_runtime_in_seconds:             <-- Field OPTIONAL, default value: 3600
+                s3_data_distribution_type:          <-- Field OPTIONAL, default value: "FullyReplicated"
+                s3_data_type:                       <-- Field OPTIONAL, default value: "S3Prefix"
+                s3_input_mode:                      <-- Field OPTIONAL, default value: "File"
+                tags:                               <-- Field OPTIONAL, default value: None
+                env:                                <-- Field OPTIONAL, default value: None
                 channels:
                     test:
-                        s3BucketName:               <------------- Field OPTIONAL
+                        s3BucketName:               <-- Field OPTIONAL
                         dataFiles:
-                            - sourceName:           <------------- Field OPTIONAL
-                                fileName:           <------------- Field OPTIONAL
+                            - sourceName:           <-- Field OPTIONAL
+                                fileName:           <-- Field OPTIONAL
 
             ```
             * **[content_type](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.MetricsSource)**: the content type of the output file in evalute step.    
