@@ -148,8 +148,8 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                             fileName:          <-- Field Required
         ```
 
-            * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_"
-            * Container paths that sagemaker uses to offload content to S3: "_/opt/ml/processing/input/{channelName}/_"
+        * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_"
+        * Container paths that sagemaker uses to offload content to S3: "_/opt/ml/processing/input/{channelName}/_"
               
         * **[train](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-training)** (Required)
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TrainingStep)**
@@ -178,8 +178,8 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                             fileName:          <-- Field OPTIONAL
         ```
 
-            * dataFiles loaded on conatiner at "_/opt/ml/input/data/{channelName}/_"(also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
-            * Container path that sagemaker uses to zip trained model content and upload to S3: "_/opt/ml/model/_"
+        * dataFiles loaded on conatiner at "_/opt/ml/input/data/{channelName}/_"(also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
+        * Container path that sagemaker uses to zip trained model content and upload to S3: "_/opt/ml/model/_"
 
         * **[create](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.model_step.ModelStep)**
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/api/inference/model.html#sagemaker.model.Model)**
@@ -202,8 +202,9 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
               
         * **[transform](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)** <font size="1">  
 
-        **NOTE:** Transform step definition is required with entry_point parameter provided to register or create a model, even if not declared in _sagemakerPipeline_ section. Definiton and declaration is required though for metrics steps.</font>
-            * **[Parameters](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TransformStep)**
+        **NOTE:** Transform step definition is required with entry_point parameter provided to register or create a model, even if not declared in _sagemakerPipeline_ section. Definiton and declaration is required though for metrics steps.</font>  
+
+        * **[Parameters](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TransformStep)**
 
         ```
         transform:                           <-- Transform Section
@@ -231,9 +232,9 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                             fileName:        <-- Field OPTIONAL
         ```
           
-            * **[s3BucketName](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L132)**: s3 bucket for the results of the batch transform job. Also used to stage local input files pointed in _fileName_
-            * **[inputBucketPrefix](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L131)**: an s3 bucket prefix appended to _s3BucketName_ used for results of the batch transform job. Also used to stage local input files pointed in _fileName_
-            * dataFiles loaded on conatiner are managed by the model server(e.x [tensorflow serving](https://sagemaker.readthedocs.io/en/stable/frameworks/tensorflow/deploying_tensorflow_serving.html#)) implemented, serving logic for the machine learning framwork(e.x tensorflow), and [transform workflow](https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html) [guided](https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html#batch-transform-large-datasets) by the parameters used. <font size="1"> **NOTE:** only one channel and in that one dataFile allowed for Transform step </font>
+        * **[s3BucketName](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L132)**: s3 bucket for the results of the batch transform job. Also used to stage local input files pointed in _fileName_
+        * **[inputBucketPrefix](https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines/blob/main/framework/transform/transform_service.py#L131)**: an s3 bucket prefix appended to _s3BucketName_ used for results of the batch transform job. Also used to stage local input files pointed in _fileName_
+        * dataFiles loaded on conatiner are managed by the model server(e.x [tensorflow serving](https://sagemaker.readthedocs.io/en/stable/frameworks/tensorflow/deploying_tensorflow_serving.html#)) implemented, serving logic for the machine learning framwork(e.x tensorflow), and [transform workflow](https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html) [guided](https://docs.aws.amazon.com/sagemaker/latest/dg/batch-transform.html#batch-transform-large-datasets) by the parameters used. <font size="1"> **NOTE:** only one channel and in that one dataFile allowed for Transform step </font>
               
         * **[evaluate](https://sagemaker.readthedocs.io/en/stable/amazon_sagemaker_model_building_pipeline.html#property-file)**: Used by the register step to augment model trained with any details coming out the JSON generated by this step. evaluate step is a processing job with additional parameters.
             * **[Parameters](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.ModelMetrics)**
@@ -262,9 +263,9 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                             fileName:           <-- Field OPTIONAL
 
         ```
-            * **[content_type](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.MetricsSource)**: the content type of the output file in evalute step.    
-            * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_" <font size="1"> **NOTE:** only one channel and in that one dataFile allowed for Evaluate step. </font>
-            * Container paths that sagemaker uses to offload content to S3: "_/opt/ml/processing/input/{channelName}/_"
+        * **[content_type](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.MetricsSource)**: the content type of the output file in evalute step.    
+        * dataFiles loaded on conatiner at "_/opt/ml/processing/input/{sourceName}/_" <font size="1"> **NOTE:** only one channel and in that one dataFile allowed for Evaluate step. </font>
+        * Container paths that sagemaker uses to offload content to S3: "_/opt/ml/processing/input/{channelName}/_"
               
         * **[registry](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-register-model)**: register a model trained in a _train_ step
             * **ModelRepack**: If "True", uses entry_point in the tranform step to use as inference entry_point when serving the model on sagemaker.
