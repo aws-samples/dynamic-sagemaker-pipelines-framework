@@ -280,7 +280,7 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
     * **pipelineName**: name of the sagemaker pipeline.
     * **models** : nested list of steps in the sagemaker pipeline to train, and/or create/register this model. 
         * **{model}**: model identifier in this sagemaker pipeline <font size="1"> **NOTE:** This pattern suggests having one train step, and a pertinent create/metric step if any. If multiple train steps are defined, create/metric/transform/register steps take the last train step to implicitly run the create/metric/transform/register steps. If you must train multiple models in the same {model} chain, use a train->create->transform->metric->register for each train step. You can also control this DAG using the _dependencies_ section below.</font>
-        - [ ] TODO Look at multi-model example for training multiple models.
+        
             * **steps**:
                 * **step_name**: name of the step displayed in this Sagemaker Pipeline.
                 * **step_class**: (Union[Processing, Training, CreateModel, Transform, Metrics, RegisterModel])
