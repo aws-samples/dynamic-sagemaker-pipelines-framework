@@ -194,7 +194,8 @@ This pattern entrypoint picks up all conf.yaml files in model level folders and 
                 supported_response_MIME_types: 
                     - application/json           <-- Field Required 
                 approval_status:                 <-- Field Required, 
-                                                        valid values: PendingManualApproval | Rejected | Approved
+                                                     - valid values: 
+                                                     PendingManualApproval | Rejected | Approved
         ```
 
             * <font size="1"> **NOTE:** CreateModel step is implicit and does not need to be defined here. It can be declared directly in the _sagemakerPipeline_ section.</font>
