@@ -2,7 +2,7 @@
 conf:
   models:
     falcon40b-finetuneable:
-      source_directory: llm-text-summarization
+      source_directory: examples/llm-text-summarization
       name: Falcon40b-Summarization
       
       preprocess:
@@ -13,11 +13,11 @@ conf:
           training:
             dataFiles:
               - sourceName: raw-prompts-train
-                fileName:  s3://${SMP_S3BUCKETNAME}/falcon40b-summarization/input/samsum-train.arrow
+                fileName:  s3://SMP_S3BUCKETNAME/falcon40b-summarization/input/samsum-train.arrow
           testing:
             dataFiles:
               - sourceName: raw-prompts-test
-                fileName:  s3://${SMP_S3BUCKETNAME}/falcon40b-summarization/input/samsum-test.arrow
+                fileName:  s3://SMP_S3BUCKETNAME/falcon40b-summarization/input/samsum-test.arrow
           
       train:
         image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
