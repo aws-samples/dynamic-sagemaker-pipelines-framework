@@ -31,7 +31,7 @@ conf:
 
             transform:
               instance_type: ml.c5.xlarge
-              image_uri: "refer-transform/docker-to-built-inference-image"
+              image_uri: "refer examples/lgbm/transform/docker to-built-inference-image"
               entry_point: transform/transform.py
               content_type: application/x-npy
               channels:

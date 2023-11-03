@@ -28,7 +28,7 @@ This pattern allows you to define your training orchestration in a configuration
     ```
 
 1. Get the source code needed  
-    1. Clone `  dynamic-model-training-with-amazon-sagemaker-pipelines Framework` and persisted into a training folder. (For this example we will use aws-train folder)  
+    1. Clone `dynamic-model-training-with-amazon-sagemaker-pipelines Framework` and persist into a training folder. (For this example we will use aws-train folder)  
 
         ```bash
         git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
