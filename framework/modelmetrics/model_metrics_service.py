@@ -91,7 +91,7 @@ class ModelMetricsService:
         """
         Parse method to retreive all sagemaker arguments
         """
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        conf = self.config.get(f"models.{self.model_name}.evaluate")
 
         args = dict(
             image_uri=conf.get("image_uri"),
@@ -125,9 +125,7 @@ class ModelMetricsService:
         - SageMaker Processing Inputs list
         
         """
-        # modelContainer is the key attribute where all models have been allocated.
-
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        conf = self.config.get(f"models.{self.model_name}.evaluate")
         # Get the total number of input files
         input_files_list = list()
         for channel in conf.get("channels", {}).keys(): input_files_list.append(
@@ -143,12 +141,9 @@ class ModelMetricsService:
         - SageMaker Processing Inputs list
         
         """
-        # parse main conf dictionary
-        # modelContainer is the key attribute where all models have been allocated.
-
         static_inputs = []
 
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        conf = self.config.get(f"models.{self.model_name}.evaluate")
         if isinstance(conf.get("channels", {}), ConfigTree):
             # Get the total number of input files
             input_files_list = self._get_static_input_list()
@@ -183,7 +178,7 @@ class ModelMetricsService:
         dynamic_inputs = []
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])
 
-        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate.channels", "train")
+        channels_conf = self.config.get(f"models.{self.model_name}.evaluate.channels", "train")
         if isinstance(channels_conf, str):
             # no datafile input
             channel_name = channels_conf
@@ -275,7 +270,7 @@ class ModelMetricsService:
                 ),
             ],
             source_dir=self.config.get(
-                f"models.modelContainer.{self.model_name}.source_directory",
+                f"models.{self.model_name}.source_directory",
                 os.getenv("SMP_SOURCE_DIR_PATH")
             ),
             code=args.get("entry_point"),
@@ -292,7 +287,7 @@ class ModelMetricsService:
         """
 
         self.logger.log_info(f"{'-' * 40} {self.model_name} {'-' * 40}")
-        evaluate_data = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        evaluate_data = self.config.get(f"models.{self.model_name}.evaluate")
         if isinstance(evaluate_data.get("channels", "train"), ConfigTree):
             evaluate_channels = list(evaluate_data.get("channels").keys())
             # Iterate through evaluate channels

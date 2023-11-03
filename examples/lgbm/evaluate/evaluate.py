@@ -11,7 +11,7 @@ if __name__=='__main__':
     print('Loading data . . . .')
     y_test= np.load(glob.glob('{}/*.npy'.format('/opt/ml/processing/input/online_shoppers_intention_ytest'))[0]) 
     # y_pred= glob.glob('{}/*.out'.format('/opt/ml/processing/input'))[0]
-    text_file= open(glob.glob('{}/*.out'.format('/opt/ml/processing/input'))[0], "r")
+    text_file= open(glob.glob('{}/*.out'.format('/opt/ml/processing/input/lgbm-Transform-test'))[0], "r")
     y_pred= np.array([float(i) for i in text_file.read()[1:-1].split(',')])
 
     print('\ny_pred shape: \n{}\n'.format(y_pred.shape))

@@ -83,9 +83,11 @@ class TrainingService:
         - SageMaker Training Arguments dictionary
         """
 
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
-        source_dir = self.config.get(f"models.modelContainer.{self.model_name}.source_directory",
-                                     os.getenv("SMP_SOURCE_DIR_PATH"))
+        conf = self.config.get(f"models.{self.model_name}.{self.domain_section}")
+        source_dir = self.config.get(
+            f"models.{self.model_name}.source_directory",
+            os.getenv("SMP_SOURCE_DIR_PATH")
+        )
 
         args = dict(
             image_uri=conf.get("image_uri"),
@@ -116,8 +118,7 @@ class TrainingService:
         - SageMaker Processing Inputs list
         
         """
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
+        conf = self.config.get(f"models.{self.model_name}.{self.domain_section}")
         # Get the total number of input files
         input_files_list = list()
         for channel in conf.get("channels", {}).keys(): input_files_list.append(
@@ -134,8 +135,7 @@ class TrainingService:
         
         """
         # parse main conf dictionary
-        # modelContainer is the key attribute where all models have been allocated.
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
+        conf = self.config.get(f"models.{self.model_name}.{self.domain_section}")
         args = self._args()
         # Get the total number of input files
         input_files_list = self._get_static_input_list()
@@ -174,7 +174,7 @@ class TrainingService:
         """
         dynamic_training_input = []
         training_channel_inputs = {}
-        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
+        conf = self.config.get(f"models.{self.model_name}.{self.domain_section}")
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])
         content_type = conf.get("content_type", None)
         input_mode = conf.get("input_mode", "File")
@@ -186,8 +186,7 @@ class TrainingService:
                 config=self.config
             )
             training_channel_inputs[source_step_name] = {}
-            for channel in self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels',
-                                                                                                          ["train"]):
+            for channel in self.config["models"][self.model_name][source_step_type].get("channels", ["train"]):
                 chain_input_path = get_chain_input_file(
                     source_step_name=source_step_name,
                     steps_dict=self.model_step_dict,
@@ -251,7 +250,7 @@ class TrainingService:
         
         """
 
-        train_conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.domain_section}")
+        train_conf = self.config.get(f"models.{self.model_name}.{self.domain_section}")
         args = self._args()
         estimator = self._run_training_step(args)
 

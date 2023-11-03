@@ -4,7 +4,7 @@ from pipeline.model_unit import ModelUnit
 from sagemaker.workflow.model_step import ModelStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_context import PipelineSession
-from utilities.domain import Conf
+from utilities.configuration import Conf
 
 
 class PipelineService:
