@@ -22,6 +22,7 @@ import os
 import boto3
 import sagemaker
 from pipeline.helper import get_chain_input_file
+from pyhocon.config_tree import ConfigTree
 from sagemaker.network import NetworkConfig
 from sagemaker.processing import (
     FrameworkProcessor,
