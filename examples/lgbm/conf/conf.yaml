@@ -31,7 +31,7 @@ conf:
 
             transform:
               instance_type: ml.c5.xlarge
-              image_uri: "refer examples/lgbm/transform/docker to-built-inference-image"
+              image_uri: "refer-transform/docker-to-built-inference-image"
               entry_point: transform/transform.py
               content_type: application/x-npy
               channels:
@@ -69,6 +69,8 @@ conf:
                       enable_cache: True
                     - step_name: lgbm-Metrics
                       step_class: Metrics
+                      chain_input_source_step: 
+                        - lgbm-Transform
                       enable_cache: True
                     - step_name: lgbm-Register
                       step_class: RegisterModel
