@@ -97,7 +97,7 @@ trainer.train()
 
 eval_metrics= trainer.evaluate()
 
-# throw an error if accuracy below threshold. Alternatively output an evaluation.json and add the pass/fail logic as a Sagemaker pipeline step.
+# throw an error if evaluation loss is above threshold. Alternatively output an evaluation.json and add the pass/fail logic as a Sagemaker pipeline step.
 if eval_metrics['eval_loss'] > 2:
     raise ValueError("Evaluation loss is too high.")
 
