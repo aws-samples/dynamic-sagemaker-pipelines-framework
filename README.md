@@ -1,7 +1,5 @@
 ## Dynamic Amazon Sagemaker Pipelines
-In this repo, we present a framework for automating SageMaker Pipelines DAG creation based on simple configuration files. This dynamic framework leverages configuration files to orchestrate preprocessing, training, evaluation, and registration steps for both single-model and multi-model use cases based on user-defined Python scripts, infrastructure needs (VPC/subnets, security groups, IAM roles, KMS keys, containers registry, instance types), input and output S3 paths, and resource tags.  
-
-The framework code starts by reading the configuration file(s); and then dynamically creates a SameMaker Pipelines DAG based on the steps declared in the configuration file(s) and the interactions/dependencies among steps. This orchestration framework caters to both single-model and multi-model use cases; and ensures smooth flow of data and processes.
+In this repo, we present a framework for automating SageMaker Pipelines DAG creation based on simple configuration files. The framework code starts by reading the configuration file(s); and then dynamically creates a SameMaker Pipelines DAG based on the steps declared in the configuration file(s) and the interactions/dependencies among steps. This orchestration framework caters to both single-model and multi-model use cases; and ensures smooth flow of data and processes.
 
 ### Architecture Diagram
 
@@ -9,17 +7,28 @@ The following architecture diagram depicts how the proposed framework can be use
 
 ![architecture-diagram](./architecture_diagram.png)
 
-### How do I use this pattern for executing Sagemaker Pipelines?
-* The pattern load single or multi conf.yaml base on the environment variable `SMP_MODEL_CONFIGPATH` , updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
+### Repository Structure 
 
-#### Steps
+This repo contains the following directories and files: 
 
-1. Repository Structure
+- **/framework/conf/**: This directory contains a configuration file that is used to set common variables across all modeling units such as subnets, security groups, and IAM role at the runtime. A modeling unit is a sequence of up to 6 steps for training an ML model 
+- **/framework/createmodel/**: This directory contains a Python script that creates a SageMaker Model object based on model artifacts from a Training Step 
+- **/framework/modelmetrics/**: This directory contains a Python script that creates a SageMaker Processing job for generating a model metrics JSON report for a trained model 
+- **/framework/pipeline/**: This directory contains Python scripts that leverage Python classes defined in other framework directories to create or update a SageMaker Pipelines DAG based on the specified configurations. The model_unit.py script is used by pipeline_service.py to create one or more modeling units. Each modeling unit is a sequence of up to 6 steps for training an ML model: process, train, create model, transform, metrics, and register model. Configurations for each modeling unit should be specified in the model’s respective repository. The pipeline_service.py also sets dependencies among SageMaker Pipelines steps (i.e., how steps within and across modeling units are sequenced and/or chained) based on sagemakerPipeline section which should be defined in the configuration file of one of the model repositories (i.e., the anchor model)
+- **/framework/processing/**: This directory contains a Python script that creates a generic SageMaker Processing job 
+- **/framework/registermodel/**: This directory contains a Python script for registering a trained model along with its calculated metrics in SageMaker Model Registry 
+- **/framework/training/**: This directory contains a Python script that creates a SageMaker Training job 
+- **/framework/transform/**: This directory contains a Python script that creates a SageMaker Batch Transform job. In the context of model training, this is used to calculate the performance of a trained model on test data •	/framework/utilities/: This directory contains utility scripts for reading and joining configuration files, as well as logging 
+- **/framework_entrypoint.py**: This file is the entry point of the framework code. It simply calls a function defined in the /framework/pipeline/ directory to create or update a SageMaker Pipelines DAG and execute it 
+- **/examples/**: This directory contains several examples of how this automation framework can be used to create simple and complex training DAGs 
+- **/env.env**: This file allows to set common variables such as subnets, security groups, and IAM role as environment variables 
+- **/requirements.txt**: This file specifies Python libraries that are required for the framework code
 
+### Deployment Guide 
 
-    Make sure your model repo structure follow at least one the following patterns.
+Follow the steps below in order to deploy the solution:
 
-    _Basic Structure_ 
+1. Organize your model training repository, for example according to the following structure:
 
     ```
     <MODEL-MAIN-DIR>
@@ -35,21 +44,21 @@ The following architecture diagram depicts how the proposed framework can be use
     └── README.md
     ```
 
-1. Get the source code needed  
-    1. Clone `dynamic-model-training-with-amazon-sagemaker-pipelines Framework` and persist into a training folder. (For this example we will use aws-train folder)  
+1. Clone the framework code and your model(s) source code from the Git repositories:
+
+    a.	Clone `dynamic-model-training-with-amazon-sagemaker-pipelines` repo into a training directory. Here we assume the training directory is called aws-train: 
 
         ```bash
         git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
         ```
 
-    1. Clone the model(s) source code under the same directory.  
-        _Note_:  For multi-model training repeat previous step as many models do you require to train
+    a. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.
 
         ```bash
         git clone https:<YOUR-MODEL-REPO>.git aws-train
         ```
 
-        For a single-model your directory should looks like:
+        For a single-model training, your directory should look like:
 
         ```
         <aws-train>  
@@ -58,7 +67,7 @@ The following architecture diagram depicts how the proposed framework can be use
         └── <YOUR-MODEL-DIRECTORY>
         ```
 
-        For multi-model your directory should looks like:
+        For multi-model training, your directory should look like:
 
         ```
         <aws-train>  
@@ -69,49 +78,57 @@ The following architecture diagram depicts how the proposed framework can be use
         └── <YOUR-MODEL-3-DIRECTORY>
         ```
 
-1. Setup your environment variables.  
+1. Set up the following environment variables. Asterisks indicate environment variables which are required, while the rest are optional.  
 
-    This is a list of the environment variables:
-
-    ```bash
-    SMP_ACCOUNTID                      (required) | AWS Account where SageMaker Pipeline is executed
-    SMP_REGION                         (required) | AWS Region where SageMaker Pipeline is executed
-    SMP_S3BUCKETNAME                   (required) | AWS S3 bucket
-    SMP_ROLE                           (required) | AWS SageMaker role
-    SMP_MODEL_CONFIGPATH               (required) | relative path for the configuration path of single-model or multi-model
-    SMP_SUBNETS                        (optional)
-    SMP_SECURITYGROUPS                 (optional)
-    ```
+  
+    | Environment Variable | Description |
+    | ---------------------| ------------|
+    | SMP_ACCOUNTID*        |    AWS Account where SageMaker Pipeline is executed |
+    | SMP_REGION*           |    AWS Region where SageMaker Pipeline is executed |
+    | SMP_S3BUCKETNAME*     |    Amazon S3 bucket name |
+    | SMP_ROLE*             |   Amazon SageMaker execution role |
+    | SMP_MODEL_CONFIGPATH* |   Relative path of the of single-model or multi-model configuration file(s) |
+    | SMP_SUBNETS          |  Subnet IDs for SageMaker networking configuration |
+    | SMP_SECURITYGROUPS   |   Security group IDs for SageMaker networking configuration |
 
     - Note:
-    > **single-model** example: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
+    > For **single-model** use cases: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
 
-    > **multi-model**  example: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
+    > For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
 
-    1. Environment Variables need to exists before execute the framework, and how to export those will depend on every preference. To avoid make public environment variables that contain credentials and to make easy to use on local testing we provide an `env.env` file where you can specified the values for those.  
+    During experimentation (i.e., local testing), you can specify environment variables inside env.env file; and then export them by executing the following command in your terminal: 
     
-    To export for local testing, on your terminal write:
     ```bash
     source env.env
     ```
-1. Create and Activate a virtual environment (recommended)
+    During operationalization, these environment variables will be set by the CI pipeline.
+
+1. Create and activate a virtual environment:
 
     ```bash
     python -m venv .venv
     source .venv/bin/activate
     ```
 
-1. Install python packages required
+1. Install required python packages: 
 
     ```bash
     pip install -r requirements.txt
     ```
 
-1. Command line execution for orchestrate the training
+1. Edit your model training conf.yaml file(s). Please see the Configuration Files Structure section for more details. 
+
+1. From terminal, call framework’s entry point to create or update and execute the SageMaker Pipeline training DAG:
 
     ```bash
     python framework/framework_entrypoint.py
     ```
+
+1. View and debug the SageMaker Pipelines execution in the Pipelines tab of SageMaker Studio UI.
+
+
+
+### Configuration Files Structure
 
 Create a model level root folder in the repo root(ref. lgbm)
 Create a conf/conf.yaml. The following breaks down sections of the conf.
