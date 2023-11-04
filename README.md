@@ -1,5 +1,13 @@
-## dynamic-model-training-with-amazon-sagemaker-pipelines
-This pattern allows you to define your training orchestration in a configuration(yaml) file to define/update and start a Sagemaker Pipeline
+## Dynamic Amazon Sagemaker Pipelines
+In this repo, we present a framework for automating SageMaker Pipelines DAG creation based on simple configuration files. This dynamic framework leverages configuration files to orchestrate preprocessing, training, evaluation, and registration steps for both single-model and multi-model use cases based on user-defined Python scripts, infrastructure needs (VPC/subnets, security groups, IAM roles, KMS keys, containers registry, instance types), input and output S3 paths, and resource tags.  
+
+The framework code starts by reading the configuration file(s); and then dynamically creates a SameMaker Pipelines DAG based on the steps declared in the configuration file(s) and the interactions/dependencies among steps. This orchestration framework caters to both single-model and multi-model use cases; and ensures smooth flow of data and processes.
+
+### Architecture Diagram
+
+The following architecture diagram depicts how the proposed framework can be used during both experimentation and operationalization of ML models.
+
+![architecture-diagram](./architecture_diagram.png)
 
 ### How do I use this pattern for executing Sagemaker Pipelines?
 * The pattern load single or multi conf.yaml base on the environment variable `SMP_MODEL_CONFIGPATH` , updates and/or starts sagemaker pipelines in your AWS account. Refer to the [framework/conf/README.md](framework/conf/README.md) to connect you AWS account.
