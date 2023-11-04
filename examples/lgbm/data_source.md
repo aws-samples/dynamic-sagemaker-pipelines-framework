@@ -10,7 +10,6 @@ This dataset was obtained from  UCI's Machine Learning Library. https://archive.
 
 ## Data Download
 Download the data locally from [here](https://archive.ics.uci.edu/static/public/468/online+shoppers+purchasing+intention+dataset.zip). The data file is named **online_shoppers_intention.csv**
-```
 
 Then reference the preprocessing script(written for sagemaker processing jobs) to create train test splits.
 
