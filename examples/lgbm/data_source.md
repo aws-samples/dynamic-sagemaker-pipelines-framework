@@ -1,4 +1,4 @@
-# Tensorflow Example Data Source
+# LGBM Data Source
 
 ## Data Information
 We use the Online Shoppers Purchasing Intention Dataset.
