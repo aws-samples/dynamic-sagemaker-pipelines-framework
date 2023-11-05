@@ -48,35 +48,30 @@ Follow the steps below in order to deploy the solution:
 
     a.	Clone `dynamic-model-training-with-amazon-sagemaker-pipelines` repo into a training directory. Here we assume the training directory is called aws-train: 
 
-        ```bash
+
         git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
-        ```
 
-    a. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.
+    b. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.
 
-        ```bash
+
         git clone https:<YOUR-MODEL-REPO>.git aws-train
-        ```
 
         For a single-model training, your directory should look like:
 
-        ```
         <aws-train>  
         .  
         ├── framework
         └── <YOUR-MODEL-DIRECTORY>
-        ```
 
         For multi-model training, your directory should look like:
 
-        ```
         <aws-train>  
         .  
         ├── framework
         └── <YOUR-MODEL-1-DIRECTORY>
         └── <YOUR-MODEL-2-DIRECTORY>
         └── <YOUR-MODEL-3-DIRECTORY>
-        ```
+
 
 1. Set up the following environment variables. Asterisks indicate environment variables which are required, while the rest are optional.  
 
@@ -92,7 +87,9 @@ Follow the steps below in order to deploy the solution:
     | SMP_SECURITYGROUPS   |   Security group IDs for SageMaker networking configuration |
 
     Note:
+
     a. For **single-model** use cases: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
+
     b. For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
 
     During experimentation (i.e., local testing), you can specify environment variables inside env.env file; and then export them by executing the following command in your terminal: 
@@ -168,7 +165,9 @@ For each model in the project, we need to specify the following in the <model-na
                         fileName*:      
         ```
         Note: 
+
         a. dataFiles are loaded to container at "_/opt/ml/processing/input/{sourceName}/_" path
+        
         b. SageMaker offloads the content from "_/opt/ml/processing/input/{channelName}/_" container path to S3 when the processing job is complete
               
     - **[train*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-training)**: This section specifies training job parameters below. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TrainingStep) for descriptions of each parameter 
@@ -197,7 +196,9 @@ For each model in the project, we need to specify the following in the <model-na
         ```
 
         Note:
+
         a. dataFiles are loaded to container at "_/opt/ml/input/data/{channelName}/_" path (also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
+        
         b. SageMaker zips trained model artifacts from "_/opt/ml/model/_" container path and uploads to S3 
 
     - **[transform*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)**: This section specifies SageMaker Transform job parameters below for making predictions on the test data. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TransformStep) for descriptions of each parameter
@@ -228,11 +229,13 @@ For each model in the project, we need to specify the following in the <model-na
         ```
         
         Note:  
+
         a. Results of the batch transform job are stored in S3 bucket with name s3BucketName. This S3 bucket is also used to stage local input files specified in _fileName_
+
         b. TODO CLARIFY THIS inputBucketPrefix is an S3 bucket prefix appended to _s3BucketName_ to store results of the batch transform job. It is also used to stage local input files specified in _fileName_
+
         c. Only one channel and one dataFile in that channel are allowed for the transform step 
 
-        ```
             
     - **[evaluate](https://sagemaker.readthedocs.io/en/stable/amazon_sagemaker_model_building_pipeline.html#property-file)**: This section specifies SageMaker Processing job parameters for generating a model metrics JSON report for the trained model. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.ModelMetrics) for descriptions of each parameter
 
@@ -261,9 +264,13 @@ For each model in the project, we need to specify the following in the <model-na
         ```
 
         Note:
+
         a. TODO CLARIFY THIS [content_type](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.MetricsSource): The content type of the output file in evaluate step    
+        
         b. dataFiles are loaded to container at "_/opt/ml/processing/input/{sourceName}/_" path
+        
         c. Only one channel and one dataFile in that channel is allowed for evaluate step
+        
         d. SageMaker offloads the content from "_/opt/ml/processing/input/{channelName}/_" container path to S3
             
     - **[registry*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-register-model)**: This section specifies parameters for registering the trained model in SageMaker Model Registry
