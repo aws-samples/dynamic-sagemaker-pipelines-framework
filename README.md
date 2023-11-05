@@ -92,9 +92,8 @@ Follow the steps below in order to deploy the solution:
     | SMP_SECURITYGROUPS   |   Security group IDs for SageMaker networking configuration |
 
     Note:
-    > For **single-model** use cases: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
-
-    > For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
+    a. For **single-model** use cases: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
+    b. For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
 
     During experimentation (i.e., local testing), you can specify environment variables inside env.env file; and then export them by executing the following command in your terminal: 
     
@@ -169,117 +168,117 @@ For each model in the project, we need to specify the following in the <model-na
                         fileName*:      
         ```
         Note: 
-        > dataFiles are loaded to container at "_/opt/ml/processing/input/{sourceName}/_" path
-        > SageMaker offloads the content from "_/opt/ml/processing/input/{channelName}/_" container path to S3 when the processing job is complete
+        a. dataFiles are loaded to container at "_/opt/ml/processing/input/{sourceName}/_" path
+        b. SageMaker offloads the content from "_/opt/ml/processing/input/{channelName}/_" container path to S3 when the processing job is complete
               
-        - **[train*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-training)**: This section specifies training job parameters below. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TrainingStep) for descriptions of each parameter 
+    - **[train*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-training)**: This section specifies training job parameters below. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TrainingStep) for descriptions of each parameter 
 
-            ```
-            image_uri*:                    
+        ```
+        image_uri*:                    
+        entry_point*:                  
+        base_job_name:                
+        instance_count:               # default value: 1
+        instance_type:                # default value: "ml.m5.2xlarge"
+        volume_size_in_gb:            # default value: 32
+        max_runtime_seconds:          # default value: 3000
+        tags:                         
+        env:                          
+        hyperparams:                  
+        model_data_uri:               
+        channels:
+            train*:                    
+                dataFiles:
+                    - sourceName:     
+                        fileName:     
+            test:                     
+                dataFiles:
+                    - sourceName:     
+                        fileName:     
+        ```
+
+        Note:
+        a. dataFiles are loaded to container at "_/opt/ml/input/data/{channelName}/_" path (also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
+        b. SageMaker zips trained model artifacts from "_/opt/ml/model/_" container path and uploads to S3 
+
+    - **[transform*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)**: This section specifies SageMaker Transform job parameters below for making predictions on the test data. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TransformStep) for descriptions of each parameter
+
+        ```
+        image_uri*:                  
+        base_job_name:              # default value: "default-transform-job-name"
+        instance_count:             # default value: 1
+        instance_type:              # default value: "ml.m5.2xlarge"
+        strategy:                   
+        assemble_with:              
+        join_source:                
+        split_type:                 
+        content_type:               # default value: "text/csv"
+        max_payload:                
+        volume_size:                # default value: 50
+        max_runtime_in_seconds:     # default value: 3600
+        input_filter:               
+        output_filter:              
+        tags:                       
+        env:                        
+        channels:
+            test:
+                s3BucketName: 
+                dataFiles:
+                    - sourceName:   
+                        fileName:   
+        ```
+        
+        Note:  
+        a. Results of the batch transform job are stored in S3 bucket with name s3BucketName. This S3 bucket is also used to stage local input files specified in _fileName_
+        b. TODO CLARIFY THIS inputBucketPrefix is an S3 bucket prefix appended to _s3BucketName_ to store results of the batch transform job. It is also used to stage local input files specified in _fileName_
+        c. Only one channel and one dataFile in that channel are allowed for the transform step 
+
+        ```
+            
+    - **[evaluate](https://sagemaker.readthedocs.io/en/stable/amazon_sagemaker_model_building_pipeline.html#property-file)**: This section specifies SageMaker Processing job parameters for generating a model metrics JSON report for the trained model. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.ModelMetrics) for descriptions of each parameter
+
+        ```
+            image_uri*:                     
             entry_point*:                  
-            base_job_name:                
-            instance_count:               # default value: 1
-            instance_type:                # default value: "ml.m5.2xlarge"
-            volume_size_in_gb:            # default value: 32
-            max_runtime_seconds:          # default value: 3000
-            tags:                         
-            env:                          
-            hyperparams:                  
-            model_data_uri:               
-            channels:
-                train*:                    
-                    dataFiles:
-                        - sourceName:     
-                            fileName:     
-                test:                     
-                    dataFiles:
-                        - sourceName:     
-                            fileName:     
-            ```
-
-            Note:
-            > dataFiles are loaded to container at "_/opt/ml/input/data/{channelName}/_" path (also accessible via environment variable "_SM_CHANNEL\_{channelName}_")
-            > SageMaker zips trained model artifacts from "_/opt/ml/model/_" container path and uploads to S3 
-
-        - **[transform*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-transform)**: This section specifies SageMaker Transform job parameters below for making predictions on the test data. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.steps.TransformStep) for descriptions of each parameter
-
-            ```
-            image_uri*:                  
-            base_job_name:              # default value: "default-transform-job-name"
-            instance_count:             # default value: 1
-            instance_type:              # default value: "ml.m5.2xlarge"
-            strategy:                   
-            assemble_with:              
-            join_source:                
-            split_type:                 
-            content_type:               # default value: "text/csv"
-            max_payload:                
-            volume_size:                # default value: 50
-            max_runtime_in_seconds:     # default value: 3600
-            input_filter:               
-            output_filter:              
-            tags:                       
-            env:                        
+            base_job_name:                 
+            instance_count:                # default value: 1
+            instance_type:                 # default value: "ml.m5.2xlarge"
+            strategy:                      # default value: "SingleRecord"
+            max_payload:                   
+            volume_size_in_gb:             # default value: 50
+            max_runtime_in_seconds:        # default value: 3600
+            s3_data_distribution_type:     # default value: "FullyReplicated"
+            s3_data_type:                  # default value: "S3Prefix"
+            s3_input_mode:                 # default value: "File"
+            tags:                          
+            env:                           
             channels:
                 test:
-                    s3BucketName: 
+                    s3BucketName:          
                     dataFiles:
-                        - sourceName:   
-                            fileName:   
-            ```
+                        - sourceName:      
+                            fileName:      
+
+        ```
+
+        Note:
+        a. TODO CLARIFY THIS [content_type](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.MetricsSource): The content type of the output file in evaluate step    
+        b. dataFiles are loaded to container at "_/opt/ml/processing/input/{sourceName}/_" path
+        c. Only one channel and one dataFile in that channel is allowed for evaluate step
+        d. SageMaker offloads the content from "_/opt/ml/processing/input/{channelName}/_" container path to S3
             
-            Note:  
-            > Results of the batch transform job are stored in S3 bucket with name s3BucketName. This S3 bucket is also used to stage local input files specified in _fileName_
-            > TODO CLARIFY THIS inputBucketPrefix is an S3 bucket prefix appended to _s3BucketName_ to store results of the batch transform job. It is also used to stage local input files specified in _fileName_
-            > Only one channel and one dataFile in that channel are allowed for the transform step 
+    - **[registry*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-register-model)**: This section specifies parameters for registering the trained model in SageMaker Model Registry
+        - **ModelRepack**: If "True", uses entry_point in the transform step for inference entry_point when serving the model on SageMaker
+        - **[ModelPackageDescription](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.step_collections.RegisterModel)**
+        - **InferenceSpecification**: This section includes inference specifications of the model package. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.step_collections.RegisterModel) for descriptions of each paramater
 
             ```
-              
-        - **[evaluate](https://sagemaker.readthedocs.io/en/stable/amazon_sagemaker_model_building_pipeline.html#property-file)**: This section specifies SageMaker Processing job parameters for generating a model metrics JSON report for the trained model. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.ModelMetrics) for descriptions of each parameter
-
+            image_uri*:                        
+            supported_content_types*: 
+                - application/json           
+            supported_response_MIME_types*: 
+                - application/json           
+            approval_status*:              # PendingManualApproval | Rejected | Approved
             ```
-                image_uri*:                     
-                entry_point*:                  
-                base_job_name:                 
-                instance_count:                # default value: 1
-                instance_type:                 # default value: "ml.m5.2xlarge"
-                strategy:                      # default value: "SingleRecord"
-                max_payload:                   
-                volume_size_in_gb:             # default value: 50
-                max_runtime_in_seconds:        # default value: 3600
-                s3_data_distribution_type:     # default value: "FullyReplicated"
-                s3_data_type:                  # default value: "S3Prefix"
-                s3_input_mode:                 # default value: "File"
-                tags:                          
-                env:                           
-                channels:
-                    test:
-                        s3BucketName:          
-                        dataFiles:
-                            - sourceName:      
-                                fileName:      
-
-            ```
-
-            Note:
-            > TODO CLARIFY THIS [content_type](https://sagemaker.readthedocs.io/en/stable/api/inference/model_monitor.html#sagemaker.model_metrics.MetricsSource): The content type of the output file in evaluate step    
-            > dataFiles are loaded to container at "_/opt/ml/processing/input/{sourceName}/_" path
-            > Only one channel and one dataFile in that channel is allowed for evaluate step
-            > SageMaker offloads the content from "_/opt/ml/processing/input/{channelName}/_" container path to S3
-              
-        - **[registry*](https://docs.aws.amazon.com/sagemaker/latest/dg/build-and-manage-steps.html#step-type-register-model)**: This section specifies parameters for registering the trained model in SageMaker Model Registry
-            - **ModelRepack**: If "True", uses entry_point in the transform step for inference entry_point when serving the model on SageMaker
-            - **[ModelPackageDescription](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.step_collections.RegisterModel)**
-            - **InferenceSpecification**: This section includes inference specifications of the model package. Please see [Amazon SageMaker documentation](https://sagemaker.readthedocs.io/en/stable/workflows/pipelines/sagemaker.workflow.pipelines.html#sagemaker.workflow.step_collections.RegisterModel) for descriptions of each paramater
-
-                ```
-                image_uri*:                        
-                supported_content_types*: 
-                    - application/json           
-                supported_response_MIME_types*: 
-                    - application/json           
-                approval_status*:              # valid values: PendingManualApproval | Rejected | Approved
-                ```
 
 -	**/conf/sagemakerPipeline***: This section is used to define SageMaker Pipelines flow including dependencies among steps. For single-model use cases, this section is defined at the end of the configuration file. For multi-model use cases, the sagemakerPipeline section only needs to be defined in configuration file of one of the models (any of the models). We refer to this model as the anchor model. 
 
