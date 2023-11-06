@@ -22,7 +22,6 @@ import os
 import boto3
 import sagemaker
 from pipeline.helper import get_chain_input_file
-from pyhocon.config_tree import ConfigTree
 from sagemaker.network import NetworkConfig
 from sagemaker.processing import (
     FrameworkProcessor,
@@ -144,7 +143,7 @@ class ModelMetricsService:
         static_inputs = []
 
         conf = self.config.get(f"models.{self.model_name}.evaluate")
-        if isinstance(conf.get("channels", {}), ConfigTree):
+        if isinstance(conf.get("channels", {}), dict):
             # Get the total number of input files
             input_files_list = self._get_static_input_list()
             if len(input_files_list) >= 7:
@@ -288,7 +287,7 @@ class ModelMetricsService:
 
         self.logger.log_info(f"{'-' * 40} {self.model_name} {'-' * 40}")
         evaluate_data = self.config.get(f"models.{self.model_name}.evaluate")
-        if isinstance(evaluate_data.get("channels", "train"), ConfigTree):
+        if isinstance(evaluate_data.get("channels", "train"), dict):
             evaluate_channels = list(evaluate_data.get("channels").keys())
             # Iterate through evaluate channels
             if len(evaluate_channels) != 1:
