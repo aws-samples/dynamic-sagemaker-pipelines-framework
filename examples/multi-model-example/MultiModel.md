@@ -87,7 +87,7 @@ For this config driven sagemaker pipeline framwork, when it is used for mutli mo
 
 Navigate to project root directory, set up env vars listed in env.env. For this multi model example, you may need to run the following command specifically in terminal.
 ```
-export SMP_MODEL_DOMAIN_CONFIGPATH=examples/multi-model-example/*/conf/conf-multi-model.yaml
+export SMP_MODEL_CONFIGPATH=examples/multi-model-example/*/conf/conf-multi-model.yaml
 ```
 - Step 3: Generate Pipeline Definition & Run Pipeline
 
