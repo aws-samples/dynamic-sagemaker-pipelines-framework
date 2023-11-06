@@ -3,7 +3,6 @@ conf:
   models:
     falcon40b-finetuneable:
       source_directory: examples/llm-text-summarization
-      name: Falcon40b-Summarization
       
       preprocess:
         image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker

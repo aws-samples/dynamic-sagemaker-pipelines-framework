@@ -3,7 +3,6 @@ conf:
     models:
         lgbm:
             source_directory: examples/lgbm
-            name: LightGBM-OnlineShopping
             train:
                 instance_type: ml.c5.xlarge
                 image_uri: SMP_ACCOUNTID.dkr.ecr.SMP_REGION.amazonaws.com/pytorch-training:1.9.0-cpu-py38

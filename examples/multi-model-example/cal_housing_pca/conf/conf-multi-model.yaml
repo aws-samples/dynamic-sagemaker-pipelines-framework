@@ -3,7 +3,6 @@ conf:
     models:
         calhousingpca:
             source_directory: examples/multi-model-example/cal_housing_pca/modelscripts
-            name: calhousingpca
             preprocess:
                 image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
                 entry_point: preprocess.py
