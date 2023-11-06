@@ -33,7 +33,7 @@ Follow the steps below in order to deploy the solution:
     ```
     <MODEL-DIR-REPO>
     .
-    ├── MODEL-DIR
+    ├── <MODEL-DIR>
     |   ├── conf
     |   |   └── conf.yaml
     |   └── scripts
@@ -88,9 +88,9 @@ Follow the steps below in order to deploy the solution:
 
     Note:
 
-        a. For **single-model** use cases: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
+        a. For single-model use cases: SMP_MODEL_CONFIGPATH="<MODEL-DIR>/conf/conf.yaml" 
 
-        b. For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
+        b. For multi-model  use cases: SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  
 
     During experimentation (i.e., local testing), you can specify environment variables inside env.env file; and then export them by executing the following command in your terminal: 
     
