@@ -51,8 +51,8 @@ Follow the steps below in order to deploy the solution:
 
         git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
 
-    b. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.
-
+    b. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.  
+  
 
         git clone https:<MODEL-DIR-REPO>.git aws-train
 
