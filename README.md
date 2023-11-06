@@ -31,7 +31,7 @@ Follow the steps below in order to deploy the solution:
 1. Organize your model training repository, for example according to the following structure:
 
     ```
-    <MODEL-MAIN-DIR>
+    <MODEL-DIR-REPO>
     .
     ├── MODEL-DIR
     |   ├── conf
@@ -46,7 +46,7 @@ Follow the steps below in order to deploy the solution:
 
 1. Clone the framework code and your model(s) source code from the Git repositories:
 
-    a.	Clone `dynamic-model-training-with-amazon-sagemaker-pipelines` repo into a training directory. Here we assume the training directory is called aws-train: 
+    a.	Clone `dynamic-model-training-with-amazon-sagemaker-pipelines` repo into a training directory. Here we assume the training directory is called `aws-train` : 
 
 
         git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
@@ -54,23 +54,23 @@ Follow the steps below in order to deploy the solution:
     b. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.
 
 
-        git clone https:<YOUR-MODEL-REPO>.git aws-train
+        git clone https:<MODEL-DIR-REPO>.git aws-train
 
         For a single-model training, your directory should look like:
 
         <aws-train>  
         .  
         ├── framework
-        └── <YOUR-MODEL-DIRECTORY>
+        └── <MODEL-DIR>
 
         For multi-model training, your directory should look like:
 
         <aws-train>  
         .  
         ├── framework
-        └── <YOUR-MODEL-1-DIRECTORY>
-        └── <YOUR-MODEL-2-DIRECTORY>
-        └── <YOUR-MODEL-3-DIRECTORY>
+        └── <MODEL-DIR-1>
+        └── <MODEL-DIR-2>
+        └── <MODEL-DIR-3>
 
 
 1. Set up the following environment variables. Asterisks indicate environment variables which are required, while the rest are optional.  
@@ -88,9 +88,9 @@ Follow the steps below in order to deploy the solution:
 
     Note:
 
-        a. For **single-model** use cases: `SMP_MODEL_CONFIGPATH="lgbm/conf/conf.yaml" `
+        a. For **single-model** use cases: `SMP_MODEL_CONFIGPATH="example/lgbm/conf/conf.yaml" `
 
-        b. For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="*/conf/conf.yaml"  `
+        b. For **multi-model**  use cases: `SMP_MODEL_CONFIGPATH="example/*/conf/conf.yaml"  `
 
     During experimentation (i.e., local testing), you can specify environment variables inside env.env file; and then export them by executing the following command in your terminal: 
     
