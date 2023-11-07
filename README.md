@@ -46,10 +46,10 @@ Follow the steps below in order to deploy the solution:
 
 1. Clone the framework code and your model(s) source code from the Git repositories:
 
-    a.	Clone `dynamic-model-training-with-amazon-sagemaker-pipelines` repo into a training directory. Here we assume the training directory is called `aws-train` : 
+    a.	Clone `dynamic-sagemaker-pipelines-framework` repo into a training directory. Here we assume the training directory is called `aws-train` : 
 
 
-        git clone https://github.com/aws-samples/dynamic-model-training-with-amazon-sagemaker-pipelines.git aws-train
+        git clone https://github.com/aws-samples/dynamic-sagemaker-pipelines-framework.git aws-train
 
     b. Clone the model(s) source code under the same directory. For multi-model training repeat this step for as many models you require to train.  
   
