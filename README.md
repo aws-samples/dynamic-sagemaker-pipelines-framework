@@ -1,4 +1,4 @@
-## Dynamic Amazon Sagemaker Pipelines
+## Dynamic Sagemaker Pipelines Framework
 In this repo, we present a framework for automating SageMaker Pipelines DAG creation based on simple configuration files. The framework code starts by reading the configuration file(s); and then dynamically creates a SameMaker Pipelines DAG based on the steps declared in the configuration file(s) and the interactions/dependencies among steps. This orchestration framework caters to both single-model and multi-model use cases; and ensures smooth flow of data and processes.
 
 ### Architecture Diagram
