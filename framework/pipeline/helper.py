@@ -20,9 +20,12 @@ import re
 
 from sagemaker.workflow import steps
 from sagemaker.workflow.functions import Join
+from sagemaker.workflow.parameters import ParameterString
+# from utilities.shared import PipelineParamVariable, params_obj
+from utilities.utils import params_obj
 
 
-def look_up_step_type_from_step_name(source_step_name: str, config: dict) -> str:
+def look_up_step_type_from_step_name(source_step_name: str, model_name: str, config: dict) -> str:
     """
     Look up a step_type in the sagemakerPipeline providing source_step_name and model_name.
 
@@ -34,28 +37,21 @@ def look_up_step_type_from_step_name(source_step_name: str, config: dict) -> str
 
     Returns:
         The step_type.
-    """
-    # note: chain_input_source_step will error out if source_step does not have an optional step_type declared in
-    # sagemakerPipeline section of conf. step_type is mandatory for step_class: Processing.
-    for model_name in config['models'].keys():
-        steps_dict = config['models'][model_name]
-        smp_steps_dict = config['sagemakerPipeline']['models'][model_name]['steps']
-
-        for step in smp_steps_dict:
-            if step['step_name'] == source_step_name:
+    """    
+    # note: chain_input_source_step will error out if source_step does not have an optional step_type declared in sagemakerPipeline section of conf. step_type is mandatory for step_class: Processing.
+    steps_dict= config['models']['modelContainer'][model_name] 
+    smp_steps_dict= config['sagemakerPipeline']['models'][model_name]['steps']
+    
+    for step in smp_steps_dict: 
+        if step['step_name'] == source_step_name: 
+            try:
+                return step['step_type']
+            except KeyError:
+                print(f'When chaining input, source {source_step_name} needs to include step_type, in sagemakerPipeline section of conf')
+            finally:
                 if step['step_class'] == 'Processing':
-                    try:
-                        return step['step_type']
-                    except KeyError:
-                        print(
-                            f'When chaining input, source {source_step_name} needs to include step_type, in sagemakerPipeline section of conf'
-                        )
-                elif step['step_class'] == 'Training':
-                    return "train"
-                elif step['step_class'] == 'Transform':
-                    return "transform"
-                else:
-                    raise Exception("Only Prcoessing, Training & Transform Step can be used as chain input source.")
+                    print(f'{source_step_name} is of step_class Processing, step_type mandatory for Processing jobs')
+
 
 
 def look_up_steps(source_step_name: str, steps_dict: dict) -> steps.Step:
@@ -73,8 +69,7 @@ def look_up_steps(source_step_name: str, steps_dict: dict) -> steps.Step:
         for step in model_steps:
             if step.name == source_step_name:
                 return step
-
-
+            
 def look_up_step_config(source_step_name: str, smp_config: dict) -> dict:
     """
     Look up a step configuration in a dictionary of steps.
@@ -91,8 +86,7 @@ def look_up_step_config(source_step_name: str, smp_config: dict) -> dict:
             if step.get("step_name") == source_step_name:
                 step_class = step.get("step_class")
                 return source_model, step_class
-
-
+            
 def get_chain_input_file(
         source_step_name: str,
         steps_dict: dict,
@@ -130,7 +124,6 @@ def get_chain_input_file(
         )
     return chain_input_file
 
-
 def get_cache_flag(step_config: dict) -> bool:
     """
     Get the cache flag for a step configuration.
@@ -151,7 +144,6 @@ def get_cache_flag(step_config: dict) -> bool:
         chache_flag = False
     return chache_flag
 
-
 def generate_default_smp_config(config: dict) -> dict:
     """
     Generate the default SageMaker Model Parallelism configuration.
@@ -165,12 +157,12 @@ def generate_default_smp_config(config: dict) -> dict:
     model_name = config.get("models.modelName")
     model_abbreviated = model_name.replace("model", "")
     project_name = config.get("project_name")
-
+    
     try:
-        default_pipeline_name = config.get(f"models.{model_name}.sagemakerPipeline.pipelineName")
+        default_pipeline_name = config.get(f"models.modelContainer.{model_name}.sagemakerPipeline.pipelineName")
     except Exception:
         default_pipeline_name = f"{project_name}-{model_abbreviated}-pipeline"
-
+    
     smp_ = f"""
         {{
             pipelineName: "{default_pipeline_name}",
@@ -213,3 +205,30 @@ def generate_default_smp_config(config: dict) -> dict:
     """
     smp_config = eval(smp_)
     return smp_config
+
+
+def get_updated_prefix(prefix: str) -> str:
+
+    params_dict = params_obj.pipeline_params
+    params_keys = ["{" + key + "}" for key in params_dict.keys()]
+    contains_param = any(param in prefix for param in params_keys)
+    if contains_param:
+        pattern = (f"({'|'.join(params_keys)})")
+        key_list = re.split(pattern, prefix)
+        updated_prefix = [params_dict[key.strip("{}")] if re.match(pattern, key)
+                          else key for key in key_list
+                          ]
+        return Join(on="", values=updated_prefix)
+    else:
+        return prefix
+#     # param_pattern = "{yyyymmdd}"
+#     yyyymmdd = ParameterString(name="yyyymmdd", default_value=param_pattern)
+#     if param_pattern in prefix:
+#         prefix_list = re.split(param_pattern, prefix)
+#         updated_prefix = [yyyymmdd if re.match(param_pattern, prefix)
+#                           else prefix for prefix in prefix_list
+#                           ]
+#         return Join(on="", values=updated_prefix)
+#
+#     else:
+#         return prefix

@@ -21,7 +21,6 @@ import os
 # Import Third-party libraries
 import boto3
 import sagemaker
-from pipeline.helper import get_chain_input_file
 from sagemaker.network import NetworkConfig
 from sagemaker.processing import (
     FrameworkProcessor,
@@ -30,8 +29,12 @@ from sagemaker.processing import (
     RunArgs,
 )
 from sagemaker.workflow.pipeline_context import PipelineSession
+from pipeline.helper import get_chain_input_file
+from pyhocon.config_tree import ConfigTree
+
 # Import Custom libraries
 from utilities.logger import Logger
+from utilities.utils import S3Utilities
 
 ########################################################################################
 ### If the Logger class implememntation required file handler                        ###
@@ -48,8 +51,7 @@ class ModelMetricsService:
     Create an Evaluate function to generate the model metrcis
     """
 
-    def __init__(self, config: dict, model_name: str, step_config: dict,
-                 model_step_dict: dict) -> "ModelMetricsService":
+    def __init__(self, config: dict, model_name: str, step_config: dict, model_step_dict: dict) -> "ModelMetricsService":
         """
         Initialization method to Create ModelMetricsService
 
@@ -78,10 +80,8 @@ class ModelMetricsService:
 
         network_config_kwargs = dict(
             enable_network_isolation=False,
-            security_group_ids=self.config.get("sagemakerNetworkSecurity.security_groups_id").split(
-                ",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
-            subnets=self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get(
-                "sagemakerNetworkSecurity.subnets", None) else None,
+            security_group_ids= self.config.get("sagemakerNetworkSecurity.security_groups_id").split(",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
+            subnets= self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get("sagemakerNetworkSecurity.subnets", None) else None,
             encrypt_inter_container_traffic=True,
         )
         return network_config_kwargs
@@ -90,15 +90,17 @@ class ModelMetricsService:
         """
         Parse method to retreive all sagemaker arguments
         """
-        conf = self.config.get(f"models.{self.model_name}.evaluate")
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        
 
         args = dict(
             image_uri=conf.get("image_uri"),
             entry_point=conf.get("entry_point"),
-            base_job_name=conf.get("base_job_name", "default-model-metrics-job-name"),
+            base_job_name=conf.get("base_job_name"),
             instance_count=conf.get("instance_count", 1),
             instance_type=conf.get("instance_type", "ml.m5.2xlarge"),
             strategy=conf.get("strategy", "SingleRecord"),
+            content_type=conf.get("content_type"),
             max_payload=conf.get("max_payload", None),
             volume_size_in_gb=conf.get("volume_size_in_gb", 50),
             max_runtime_in_seconds=conf.get("max_runtime_in_seconds", 3600),
@@ -115,7 +117,7 @@ class ModelMetricsService:
 
         return args
 
-    def _get_static_input_list(self) -> list:
+    def _get_static_input_list(self)-> list:
         """
         Method to retreive SageMaker static inputs
 
@@ -124,13 +126,14 @@ class ModelMetricsService:
         - SageMaker Processing Inputs list
         
         """
-        conf = self.config.get(f"models.{self.model_name}.evaluate")
+        # modelContainer is the key attribute where all models have been allocated.
+
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
         # Get the total number of input files
         input_files_list = list()
-        for channel in conf.get("channels", {}).keys(): input_files_list.append(
-            conf.get(f"channels.{channel}.dataFiles", [])[0])
+        for channel in conf.get("channels", {}).keys(): input_files_list.append(conf.get(f"channels.{channel}.dataFiles", [])[0])
         return input_files_list
-
+    
     def _get_static_input(self, input_local_filepath):
         """
         Method to retreive SageMaker static inputs
@@ -140,10 +143,13 @@ class ModelMetricsService:
         - SageMaker Processing Inputs list
         
         """
-        static_inputs = []
+        # parse main conf dictionary
+        # modelContainer is the key attribute where all models have been allocated.
 
-        conf = self.config.get(f"models.{self.model_name}.evaluate")
-        if isinstance(conf.get("channels", {}), dict):
+        static_inputs = []
+        
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        if isinstance(conf.get("channels", {}), ConfigTree):   
             # Get the total number of input files
             input_files_list = self._get_static_input_list()
             if len(input_files_list) >= 7:
@@ -157,15 +163,15 @@ class ModelMetricsService:
                     _source = os.path.join(bucket, input_prefix, file.get("fileName"))
 
                 temp = ProcessingInput(
-                    input_name=file.get("sourceName", ""),
-                    source=_source,
-                    destination=os.path.join(input_local_filepath, file.get("sourceName", "")),
-                    s3_data_distribution_type=conf.get("s3_data_distribution_type", "FullyReplicated"),
-                )
+                        input_name=file.get("sourceName",""),
+                        source=_source,
+                        destination=os.path.join(input_local_filepath, file.get("sourceName", "")),
+                        s3_data_distribution_type=conf.get("s3_data_distribution_type", "FullyReplicated"),
+                    )
                 static_inputs.append(temp)
-
+            
         return static_inputs
-
+    
     def _get_chain_input(self, input_local_filepath):
         """
         Method to retreive SageMaker chain inputs
@@ -176,8 +182,8 @@ class ModelMetricsService:
         """
         dynamic_inputs = []
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])
-
-        channels_conf = self.config.get(f"models.{self.model_name}.evaluate.channels", "train")
+        
+        channels_conf = self.config.get(f"models.modelContainer.{self.model_name}.evaluate.channels", "train")
         if isinstance(channels_conf, str):
             # no datafile input
             channel_name = channels_conf
@@ -193,7 +199,7 @@ class ModelMetricsService:
                 steps_dict=self.model_step_dict,
                 source_output_name=channel_name,
             )
-
+        
             temp = ProcessingInput(
                 input_name=f"{source_step_name}-input",
                 source=chain_input_path,
@@ -203,6 +209,7 @@ class ModelMetricsService:
 
         return dynamic_inputs
 
+    
     def _get_processing_inputs(self, input_destination) -> list:
         """
         Method to get additional processing inputs
@@ -214,12 +221,12 @@ class ModelMetricsService:
         return processing_inputs
 
     def _generate_model_metrics(
-            self,
-            input_destination: str,
-            output_source: str,
-            output_destination: str,
+        self, 
+        input_destination: str, 
+        output_source: str, 
+        output_destination: str, 
     ) -> RunArgs:
-
+        
         """
         Method to create the ProcessorStep args to calculate metrics
 
@@ -260,7 +267,7 @@ class ModelMetricsService:
         )
 
         generate_model_metrics_args = processor.run(
-            inputs=self._get_processing_inputs(input_destination),
+            inputs = self._get_processing_inputs(input_destination),
             outputs=[
                 ProcessingOutput(
                     source=output_source,
@@ -269,7 +276,7 @@ class ModelMetricsService:
                 ),
             ],
             source_dir=self.config.get(
-                f"models.{self.model_name}.source_directory",
+                f"models.modelContainer.{self.model_name}.source_directory", 
                 os.getenv("SMP_SOURCE_DIR_PATH")
             ),
             code=args.get("entry_point"),
@@ -285,9 +292,9 @@ class ModelMetricsService:
         Method to calculate models metrics
         """
 
-        self.logger.log_info(f"{'-' * 40} {self.model_name} {'-' * 40}")
-        evaluate_data = self.config.get(f"models.{self.model_name}.evaluate")
-        if isinstance(evaluate_data.get("channels", "train"), dict):
+        self.logger.log_info(f"{'-'*40} {self.model_name} {'-'*40}")
+        evaluate_data = self.config.get(f"models.modelContainer.{self.model_name}.evaluate")
+        if isinstance(evaluate_data.get("channels", "train"), ConfigTree):
             evaluate_channels = list(evaluate_data.get("channels").keys())
             # Iterate through evaluate channels
             if len(evaluate_channels) != 1:

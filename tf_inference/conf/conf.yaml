@@ -1,0 +1,56 @@
+---
+conf:
+    models:
+        modelContainer:
+            calhousing:
+                source_directory: tf_inference/modelscripts
+                name: calhousing
+                preprocess:
+                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                    entry_point: preprocess.py
+                    channels:
+                        inference:
+                            dataFiles:
+                                - sourceName: raw_data
+                                  fileName: s3://sagemaker-us-east-1-322391906892/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
+                transform:
+                  image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
+                  entry_point: inference.py
+                  # channels: inference
+                  # assemble_with: Line
+                  # split_type: Line
+                  # join_source: Input
+                postprocess:
+                    image_uri: 683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3
+                    entry_point: postprocess.py
+                    channels:
+                        inference:
+                            dataFiles:
+                                - sourceName: raw_data
+                                  fileName: s3://<BucketName>/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
+
+    sagemakerPipeline:
+        pipelineName: calhousing-model-inference-smp
+        models:
+            calhousing:
+                steps:
+                    - step_name: calhousing-Preprocessing
+                      step_type: preprocess
+                      step_class: Processing
+                      enable_cache: True
+                    - step_name: calhousing-Transform
+                      step_class: Transform
+                      step_type: transform
+                      enable_cache: True
+                      chain_input_source_step:
+                        - calhousing-Preprocessing
+                    - step_name: calhousing-Postprocessing
+                      step_type: postprocess
+                      step_class: Processing
+                      chain_input_source_step: 
+                        - calhousing-Transform
+
+        dependencies:
+            - calhousing-Preprocessing >> calhousing-Transform >> calhousing-Postprocessing
+
+fileName: s3://sagemaker-us-east-1-322391906892/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}

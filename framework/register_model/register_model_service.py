@@ -1,3 +1,4 @@
+
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # SPDX-License-Identifier: MIT-0
@@ -15,13 +16,16 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-from sagemaker.model import ModelPackage
+import os
+import boto3
+from sagemaker.model import Model, ModelPackage
 from sagemaker.workflow.execution_variables import ExecutionVariables
 from sagemaker.model_metrics import MetricsSource, ModelMetrics
+from sagemaker.workflow.properties import PropertyFile
+from sagemaker.workflow.functions import Join, JsonGet
 from sagemaker.workflow.steps import ProcessingStep, TrainingStep
 
 from createmodel.create_model_service import CreateModelService
-
 
 class RegisterModelService:
     def __init__(self, config: dict, model_name: str):
@@ -30,17 +34,14 @@ class RegisterModelService:
 
     def register_model(self, step_metrics: ProcessingStep, step_train: TrainingStep) -> ModelPackage:
         create_model_service = CreateModelService(self.config, self.model_name)
-        model_package_dict = self.config.get(f"models.{self.model_name}.registry")
+        model_package_dict = self.config.get(f"models.modelContainer.{self.model_name}.registry")
         model = create_model_service.create_model(step_train=step_train)
 
         if step_metrics:
             model_metrics = ModelMetrics(
                 model_statistics=MetricsSource(
-                    content_type=self.config.get(
-                        f"models.{self.model_name}.evaluate.content_type", 
-                        "application/json"
-                    ),
-                    s3_uri="{}{}.json".format(
+                    content_type=model_package_dict.get("InferenceSpecification.supported_content_types", "application/json")[0],
+                    s3_uri = "{}{}.json".format(
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"],
                         step_metrics.arguments["ProcessingOutputConfig"]["Outputs"][0]["OutputName"],
                     ),
@@ -58,10 +59,7 @@ class RegisterModelService:
             transform_instances=inference_spec_dict.get("SupportedTransformInstanceTypes", ["ml.m5.2xlarge"]),
             model_package_group_name=f"{self.config.get('models.projectName')}-{self.model_name}",
             marketplace_cert=False,
-            description=model_package_dict.get(
-                "ModelPackageDescription",
-                "Default Model Package Description. Please add custom descriptioon in your conf.yaml file"
-            ),
+            description=model_package_dict.get("ModelPackageDescription", "Default Model Package Description. Please add custom descriptioon in your conf.yaml file"),
             customer_metadata_properties={
                 "PIPELINE_ARN": ExecutionVariables.PIPELINE_EXECUTION_ARN,
             },
@@ -70,3 +68,4 @@ class RegisterModelService:
         )
 
         return register_model_step_args
+        

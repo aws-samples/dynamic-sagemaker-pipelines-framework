@@ -17,11 +17,6 @@
 
 # Create individual model units for pipeline
 
-from createmodel.create_model_service import CreateModelService
-from modelmetrics.model_metrics_service import ModelMetricsService
-from pipeline.helper import get_cache_flag
-from processing.processing_service import ProcessingService
-from registermodel.register_model_service import RegisterModelService
 from sagemaker.workflow.model_step import ModelStep
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
@@ -30,24 +25,34 @@ from sagemaker.workflow.steps import (
     TrainingStep,
     TransformStep
 )
+
+from processing.processing_service import ProcessingService
 from training.training_service import TrainingService
 from transform.transform_service import TransformService
+from createmodel.create_model_service import CreateModelService
+from modelmetrics.model_metrics_service import ModelMetricsService
+from register_model.register_model_service import RegisterModelService
+from pipeline.helper import get_cache_flag
+from utilities.utils import ParamStore
 
 
 class ModelUnit:
     def __init__(
-            self,
-            config: dict,
-            model_name: str,
-            model_step_dict: dict,
+        self,
+        config: dict,
+        model_name: str,
+        model_step_dict: dict,
+        run_mode: str,
     ) -> "ModelUnit":
-
+        
         self.config = config
         self.model_name = model_name
+        self.run_mode = run_mode
         self.model_step_dict = model_step_dict.copy()
         self.model_step_dict[self.model_name] = []
-
-    def get_train_pipeline_steps(self) -> list:
+        
+    
+    def get_pipeline_steps(self) -> list:
         process_step = None
         train_step = None
         create_model_step = None
@@ -55,7 +60,7 @@ class ModelUnit:
         metrics_step = None
         register_model_step = None
         model_pipeline_steps = []
-
+        
         step_config_list = self.config.get(f"sagemakerPipeline.models.{self.model_name}.steps")
 
         for step_config in step_config_list:
@@ -72,7 +77,16 @@ class ModelUnit:
                 create_model_step = self.sagemaker_create_model(step_config, train_step)
                 add_step = create_model_step
             elif step_class == "Transform":
-                sagemaker_model_name = create_model_step.properties.ModelName
+                if self.run_mode == "inference":
+                    model_name = step_config.get(f"models.modelContainer.{self.model_name}.transform.model_name", None)
+                    if model_name:
+                        sagemaker_model_name = model_name
+                    else:
+                        project_name = self.config.get("models.projectName")
+                        model_name = f"/mlops/{project_name}/{self.model_name}/ModelName"
+                        sagemaker_model_name = ParamStore().get_parameter_value(model_name).split("/")[-1]
+                else:
+                    sagemaker_model_name = create_model_step.properties.ModelName
                 transform_step = self.sagemaker_transform(step_config, sagemaker_model_name)
                 add_step = transform_step
             elif step_class == "Metrics":
@@ -87,7 +101,7 @@ class ModelUnit:
                 add_step = register_model_step
             else:
                 raise Exception("Invalid step_class value.")
-
+            
             model_pipeline_steps.append(add_step)
             self.model_step_dict[self.model_name].append(add_step)
         return model_pipeline_steps
@@ -98,6 +112,7 @@ class ModelUnit:
             self.model_name,
             step_config,
             self.model_step_dict,
+            self.run_mode
         )
         step_args = process_service.processing()
         cache_config = CacheConfig(enable_caching=True, expire_after="10d")
@@ -107,11 +122,11 @@ class ModelUnit:
             cache_config=cache_config,
         )
         return process_step
-
+    
     def sagemaker_training(self, step_config: dict) -> TrainingStep:
 
         training_service = TrainingService(
-            self.config,
+            self.config, 
             self.model_name,
             step_config,
             self.model_step_dict,
@@ -125,9 +140,9 @@ class ModelUnit:
             cache_config=cache_config,
         )
         return train_step
-
+    
     def sagemaker_create_model(self, step_config: dict, train_step: TrainingStep) -> ModelStep:
-
+        
         create_model_service = CreateModelService(
             self.config,
             self.model_name,
@@ -138,14 +153,15 @@ class ModelUnit:
             step_args=model.create(instance_type="ml.m5.2xlarge")
         )
         return create_model_step
-
+    
     def sagemaker_transform(self, step_config: dict, sagemaker_model_name: str) -> TransformStep:
-
+        
         transform_service = TransformService(
-            self.config,
+            self.config, 
             self.model_name,
             step_config,
             self.model_step_dict,
+            self.run_mode
         )
 
         transform_step_args = transform_service.transform(
@@ -158,9 +174,9 @@ class ModelUnit:
             cache_config=cache_config
         )
         return transform_step
-
+    
     def sagemaker_model_metrics(self, step_config: dict) -> ProcessingStep:
-
+        
         model_metric_service = ModelMetricsService(self.config, self.model_name, step_config, self.model_step_dict)
         model_metric_args = model_metric_service.calculate_model_metrics()
 
@@ -178,10 +194,9 @@ class ModelUnit:
         )
 
         return metrics_step
-
-    def sagemaker_register_model(self, step_config: dict, metrics_step: ProcessingStep,
-                                 train_step: TrainingStep) -> ModelStep:
-
+    
+    def sagemaker_register_model(self, step_config: dict, metrics_step: ProcessingStep, train_step: TrainingStep) -> ModelStep:
+        
         register_model_service = RegisterModelService(self.config, self.model_name)
         register_model_args = register_model_service.register_model(
             metrics_step,

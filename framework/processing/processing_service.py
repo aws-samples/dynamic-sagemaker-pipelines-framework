@@ -15,19 +15,28 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import json
 import os
-from typing import Tuple
+import json
+from typing import Union, Tuple
 
-from pipeline.helper import get_chain_input_file, look_up_step_type_from_step_name
 from sagemaker.network import NetworkConfig
 from sagemaker.processing import (
     FrameworkProcessor,
     ProcessingInput,
-    ProcessingOutput
+    ProcessingOutput,
+    Processor
 )
 from sagemaker.sklearn import estimator
+from sagemaker.workflow.execution_variables import ExecutionVariables
 from sagemaker.workflow.pipeline_context import PipelineSession
+from sagemaker.workflow.parameters import ParameterString
+
+from pipeline.helper import (
+    get_chain_input_file,
+    look_up_step_type_from_step_name,
+    get_updated_prefix
+)
+from utilities.utils import S3Utilities, params_obj
 
 
 class ProcessingService:
@@ -46,11 +55,13 @@ class ProcessingService:
         - Dictionary of model processing steps
     """
 
-    def __init__(self, config: dict, model_name: str, step_config: dict, model_step_dict: dict):
+    def __init__(self, config: dict, model_name: str, step_config: dict, model_step_dict: dict,run_mode: str):
         self.config = config
         self.model_name = model_name
         self.step_config = step_config
         self.model_step_dict = model_step_dict
+        self.run_mode = run_mode
+
 
     def _get_network_config(self) -> dict:
         """
@@ -62,15 +73,13 @@ class ProcessingService:
         """
         network_config_kwargs = dict(
             enable_network_isolation=False,
-            security_group_ids=self.config.get("sagemakerNetworkSecurity.security_groups_id").split(
-                ",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
-            subnets=self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get(
-                "sagemakerNetworkSecurity.subnets", None) else None,
+            security_group_ids=self.config.get("sagemakerNetworkSecurity.security_groups_id").split(",") if self.config.get("sagemakerNetworkSecurity.security_groups_id") else None,
+            subnets=self.config.get("sagemakerNetworkSecurity.subnets", None).split(",") if self.config.get("sagemakerNetworkSecurity.subnets", None) else None,
             encrypt_inter_container_traffic=True,
         )
 
         return network_config_kwargs
-
+    
     def _get_pipeline_session(self) -> PipelineSession:
         """
         Method to retreive SageMaker pipeline session
@@ -91,15 +100,13 @@ class ProcessingService:
         """
 
         # parse main conf dictionary
-        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
-        source_dir = self.config.get(
-            f"models.{self.model_name}.source_directory", 
-            os.getenv("SMP_SOURCE_DIR_PATH")
-        )
+        # modelContainer is the key attribute where all models have been allocated.
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type', 'preprocessing')}")
+        source_dir = self.config.get(f"models.modelContainer.{self.model_name}.source_directory", os.getenv("SMP_SOURCE_DIR_PATH"))
 
         args = dict(
             image_uri=conf.get("image_uri"),
-            base_job_name=conf.get("base_job_name", "default-processing-job-name"),
+            base_job_name=conf.get("base_job_name"),
             entry_point=conf.get("entry_point"),
             instance_count=conf.get("instance_count", 1),
             instance_type=conf.get("instance_type", "ml.m5.2xlarge"),
@@ -118,8 +125,8 @@ class ProcessingService:
         )
 
         return args
-
-    def _get_static_input_list(self) -> list:
+    
+    def _get_static_input_list(self)-> list:
         """
         Method to retreive SageMaker static inputs
 
@@ -128,16 +135,14 @@ class ProcessingService:
         - SageMaker Processing Inputs list
         
         """
-        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
+        # modelContainer is the key attribute where all models have been allocated.
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
         # Get the total number of input files
         input_files_list = list()
-        for channel in conf.get("channels", {}).keys():
-            temp_data_files = conf.get(f"channels.{channel}.dataFiles", [])
-            if temp_data_files:
-                input_files_list.append(temp_data_files[0])
+        for channel in conf.get("channels", {}).keys(): input_files_list.append(conf.get(f"channels.{channel}.dataFiles", [])[0]) 
         return input_files_list
-
-    def _get_static_input(self) -> Tuple[list, int]:
+    
+    def _get_static_input(self)-> Tuple[list,int]:
         """
         Method to retreive SageMaker static inputs
 
@@ -147,10 +152,12 @@ class ProcessingService:
         
         """
         # parse main conf dictionary
-        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
+        # modelContainer is the key attribute where all models have been allocated.
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
         args = self._args()
         # Get the total number of input files
         input_files_list = self._get_static_input_list()
+
         static_inputs = []
         input_local_filepath = "/opt/ml/processing/input/"
 
@@ -158,19 +165,19 @@ class ProcessingService:
             if file.get("fileName").startswith("s3://"):
                 _source = file.get("fileName")
             else:
-                bucket = conf.get("channels.train.s3Bucket")
-                input_prefix = conf.get("channels.train.s3InputPrefix", "")
+                bucket = conf.get(f"channels.{self.run_mode}.s3Bucket")
+                input_prefix = conf.get(f"channels.{self.run_mode}.s3InputPrefix", "")
                 _source = os.path.join(bucket, input_prefix, file.get("fileName"))
-
+            
             temp = ProcessingInput(
-                input_name=file.get("sourceName", ""),
-                source=_source,
-                destination=os.path.join(input_local_filepath, file.get("sourceName", "")),
-                s3_data_distribution_type=args.get("s3_data_distribution_type")
-            )
+                    input_name=file.get("sourceName", ""),
+                    source=get_updated_prefix(_source),
+                    destination=os.path.join(input_local_filepath, file.get("sourceName", "")),
+                    s3_data_distribution_type=args.get("s3_data_distribution_type")
+                )
 
             static_inputs.append(temp)
-
+            
         return static_inputs
 
     def _get_static_manifest_input(self):
@@ -190,13 +197,24 @@ class ProcessingService:
         If there are more than 7 input data files, Manifest file needs to
         be used to reference ProcessingInput data.
         """
-        conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
-        bucket = conf.get("channels.train.s3Bucket")
-        input_prefix = conf.get("channels.train.s3InputPrefix", "")
+        conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
+        bucket = conf.get(f"channels.{self.run_mode}.s3Bucket")
+        input_prefix = conf.get(f"channels.{self.run_mode}.s3InputPrefix", "")
         input_local_file_path = conf.get("inputLocalFilepath", "/opt/ml/processing/input")
         manifest_local_filename = f"{self.model_name}_{self.step_config.get('step_type')}_input.manifest"
         input_files_list = self._get_static_input_list()
-
+        #TODO : Incorporate manifest for inference
+        manifest_s3_key = f"manifest/input/{self.model_name}/{self.step_config.get('step_type')}/input.manifest"
+        _source = os.path.join(bucket, manifest_s3_key)
+        PipelineParamVariable().pipeline_params = {f"manifest_{self.model_name}_{self.step_config.get('step_type')}":
+                                                       ParameterString(name=f"manifest_{self.model_name}_"
+                                                                            f"{self.step_config.get('step_type')}",
+                                                                       default_value=_source
+                                                                       )
+                                                   }
+        manifest_processing_input = PipelineParamVariable().pipelineparams.get(
+            f"manifest_{self.model_name}_{self.step_config.get('step_type')}"
+        )
         manifest_list = []
         for file in input_files_list:
             manifest_list.append(file.get("fileName"))
@@ -205,7 +223,7 @@ class ProcessingService:
 
         with open(manifest_local_filename, "w") as outfile:
             json.dump(manifest_data, outfile, indent=1)
-
+        # TODO; S3Utilities.upload_to_s3(manifest_local_filename, bucket, manifest_s3_key)
         manifest_input = ProcessingInput(
             source=manifest_local_filename,
             destination=os.path.join(input_local_file_path, "train"),
@@ -226,29 +244,41 @@ class ProcessingService:
         chain_input_source_step = self.step_config.get("chain_input_source_step", [])
         input_local_filepath = "/opt/ml/processing/input/"
         args = self._args()
+        
 
         for source_step_name in chain_input_source_step:
-            source_step_type = look_up_step_type_from_step_name(
-                source_step_name=source_step_name,
-                config=self.config
-            )
-
-            for channel in self.config["models"][self.model_name][source_step_type].get('channels',["train"]):
-                chain_input_path = get_chain_input_file(
-                    source_step_name=source_step_name,
-                    steps_dict=self.model_step_dict,
-                    source_output_name=channel,
-                )
-
+            source_step_type= look_up_step_type_from_step_name(source_step_name= source_step_name, model_name=self.model_name, config=self.config)
+            if 'channels' in self.config['models']['modelContainer'][self.model_name][source_step_type]:
+                for channel in self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels', [f"{self.run_mode}"]):
+                    chain_input_path = get_chain_input_file(
+                        source_step_name=source_step_name,
+                        steps_dict=self.model_step_dict,
+                        source_output_name=channel,
+                    )
+            
                 temp = ProcessingInput(
                     input_name=f"{source_step_name}-input-{channel}",
                     source=chain_input_path,
-                    destination=os.path.join(input_local_filepath, f"{source_step_name}-input-{channel}"),
+                    destination=os.path.join(input_local_filepath, channel),
+                    s3_data_distribution_type=args.get("s3_data_distribution_type")
+                )
+                dynamic_processing_input.append(temp)
+            else:
+                chain_input_path = get_chain_input_file(
+                    source_step_name=source_step_name,
+                    steps_dict=self.model_step_dict,
+                    source_output_name=f"{self.run_mode}",
+                )
+                temp = ProcessingInput(
+                    input_name=f"{source_step_name}-input-{self.run_mode}",
+                    source=chain_input_path,
+                    destination=os.path.join(input_local_filepath, f"{self.run_mode}"),
                     s3_data_distribution_type=args.get("s3_data_distribution_type")
                 )
                 dynamic_processing_input.append(temp)
 
         return dynamic_processing_input
+
 
     def _get_processing_inputs(self) -> list:
         """
@@ -264,11 +294,11 @@ class ProcessingService:
             temp_static_input = self._get_static_manifest_input()
         else:
             temp_static_input = self._get_static_input()
-
+        
         dynamic_processing_input = self._get_chain_input()
-
+        
         return temp_static_input + dynamic_processing_input
-
+        
     def _get_processing_outputs(self) -> list:
         """
         Method to retreive SageMaker processing outputs
@@ -277,15 +307,14 @@ class ProcessingService:
         ----------
         - SageMaker Processing Outputs list
         """
-        processing_conf = self.config.get(f"models.{self.model_name}.{self.step_config.get('step_type')}")
+        processing_conf = self.config.get(f"models.modelContainer.{self.model_name}.{self.step_config.get('step_type')}")
         processing_outputs = []
-        processing_output_local_filepath = processing_conf.get("location.outputLocalFilepath",
-                                                               "/opt/ml/processing/output")
+        processing_output_local_filepath = processing_conf.get("location.outputLocalFilepath", "/opt/ml/processing/output")
 
-        source_step_type = self.step_config["step_type"]
 
-        output_names = list(
-            self.config["models"][self.model_name][source_step_type].get('channels', ["train"]))
+        source_step_type= self.step_config['step_type']
+
+        output_names = list(self.config['models']['modelContainer'][self.model_name][source_step_type].get('channels', ["train"]))
 
         for output_name in output_names:
             temp = ProcessingOutput(
@@ -297,11 +326,11 @@ class ProcessingService:
             processing_outputs.append(temp)
 
         return processing_outputs
-
+    
     def _run_processing_step(
-            self,
-            network_config: dict,
-            args: dict
+        self,
+        network_config: dict,
+        args: dict
     ):
         """
         Method to run SageMaker Processing step
@@ -322,10 +351,10 @@ class ProcessingService:
         entrypoint_command = args["entry_point"].replace("/", ".").replace(".py", "")
 
         framework_processor = FrameworkProcessor(
-            image_uri=args["image_uri"],
+            image_uri=args['image_uri'],
             framework_version=args["framework_version"],
             estimator_cls=estimator.SKLearn,
-            role=args["role"],
+            role = args["role"],
             command=["python", "-m", entrypoint_command],
             instance_count=args["instance_count"],
             instance_type=args["instance_type"],
@@ -349,7 +378,7 @@ class ProcessingService:
         )
 
         return step_process
-
+    
     def processing(self) -> dict:
         return self._run_processing_step(
             self._get_network_config(),
