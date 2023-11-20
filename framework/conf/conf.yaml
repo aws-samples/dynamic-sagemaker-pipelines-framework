@@ -1,11 +1,11 @@
 ---
 conf:
   applicationName: aiml
-  s3Bucket: sagemaker-us-east-1-322391906892
+  s3Bucket:
   sagemakerNetworkSecurity:
-    subnets: subnet-01c8689ae8f918abd,subnet-05125f9e290319a6f
-    role: arn:aws:iam::322391906892:role/housing-mlops-artifact-sagemaker-role
-    security_groups_id: sg-091bc5e4bc0429e33
+    subnets:
+    role:
+    security_groups_id:
   models:
-    projectName: apg
+    projectName: housing
     modelName: calhousing

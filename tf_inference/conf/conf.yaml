@@ -12,7 +12,7 @@ conf:
                         inference:
                             dataFiles:
                                 - sourceName: raw_data
-                                  fileName: s3://sagemaker-us-east-1-322391906892/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
+                                  fileName: s3://<EnterBucketName>/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
                 transform:
                   image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/tensorflow-inference:2.11.0-cpu
                   entry_point: inference.py
@@ -27,7 +27,7 @@ conf:
                         inference:
                             dataFiles:
                                 - sourceName: raw_data
-                                  fileName: s3://<BucketName>/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
+                                  fileName: s3://<EnterBucketName>/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
 
     sagemakerPipeline:
         pipelineName: calhousing-model-inference-smp
@@ -52,5 +52,3 @@ conf:
 
         dependencies:
             - calhousing-Preprocessing >> calhousing-Transform >> calhousing-Postprocessing
-
-fileName: s3://sagemaker-us-east-1-322391906892/tf2-california-housing-pipelines/inferencedata/{yyyymmdd}
