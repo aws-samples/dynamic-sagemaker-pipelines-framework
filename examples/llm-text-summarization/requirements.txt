@@ -1,0 +1,9 @@
+torch==2.0.1
+transformers
+datasets
+peft==0.4.0
+bitsandbytes==0.40.2
+accelerate==0.21.0
+py7zr
+einops
+tensorboardX

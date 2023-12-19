@@ -1,0 +1,8 @@
+**/.DS_Store
+*.ipynb
+*.ipynb_checkpoints*
+*__pycache__*
+pipeline_definition.json
+*env.txt
+.idea
+git_erase_commits

@@ -1,0 +1,65 @@
+---
+conf:
+  models:
+    falcon40b-finetuneable:
+      source_directory: examples/llm-text-summarization
+      
+      preprocess:
+        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
+        entry_point: preprocessing/preprocessing.py
+        base_job_name: falcon-text-summarization-preprocess
+        channels:
+          training:
+            dataFiles:
+              - sourceName: raw-prompts-train
+                fileName:  s3://SMP_S3BUCKETNAME/falcon40b-summarization/input/samsum-train.arrow
+          testing:
+            dataFiles:
+              - sourceName: raw-prompts-test
+                fileName:  s3://SMP_S3BUCKETNAME/falcon40b-summarization/input/samsum-test.arrow
+          
+      train:
+        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-cpu-py310-ubuntu20.04-sagemaker
+        entry_point: training/training.py
+        base_job_name: falcon-text-summarization-tuning
+        instance_type: ml.g5.12xlarge
+        volume_size_in_gb: 1024
+        max_runtime_seconds: 86400
+
+        
+      transform:
+        image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-gpu-py39-cu117-ubuntu20.04
+        entry_point: transform/inference.py
+
+
+      registry:
+        ModelRepack: "False"
+        InferenceSpecification: 
+          image_uri: 763104351884.dkr.ecr.us-east-1.amazonaws.com/huggingface-pytorch-inference:1.13.1-transformers4.26.0-gpu-py39-cu117-ubuntu20.04
+          supported_content_types: 
+              - application/json
+          supported_response_MIME_types: 
+              - application/json
+          approval_status: PendingManualApproval
+
+
+  sagemakerPipeline:
+    pipelineName: Falcon40b-fine-tune
+    models:
+      falcon40b-finetuneable:
+        steps:
+          - step_name: falcon-text-summarization-preprocess
+            step_class: Processing
+            step_type: preprocess
+            enable_cache: True
+          - step_name: falcon-text-summarization-tuning
+            step_class: Training
+            enable_cache: False
+            step_type: train
+            chain_input_source_step:
+              - falcon-text-summarization-preprocess
+          - step_name: falcon-text-summarization-register
+            step_class: RegisterModel
+            enable_cache: False
+    dependencies:
+      - falcon-text-summarization-preprocess >> falcon-text-summarization-tuning >> falcon-text-summarization-register

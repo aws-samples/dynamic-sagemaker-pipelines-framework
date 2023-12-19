@@ -1,0 +1,9 @@
+---
+conf:
+  s3Bucket: SMP_S3BUCKETNAME
+  modelConfigFilePath: SMP_MODEL_CONFIGPATH
+  sagemakerNetworkSecurity:
+    subnets: SMP_SUBNETS
+    role: SMP_ROLE
+    security_groups_id: SMP_SECURITYGROUPS
+
