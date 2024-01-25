@@ -41,5 +41,5 @@ ENTRYPOINT ["python", "/usr/local/bin/dockerd-entrypoint.py"]
 # Define command to be passed to the entrypoint
 CMD ["serve"]
 
-# Define healthcheck, implemented as ping() in model_script.py
-HEALTHCHECK CMD curl --fail http://localhost:8080/ping
+# Define healthcheck
+HEALTHCHECK CMD curl --fail http://localhost:8080/ping || exit 1   
