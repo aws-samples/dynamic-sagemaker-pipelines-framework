@@ -42,4 +42,8 @@ ENTRYPOINT ["python", "/usr/local/bin/dockerd-entrypoint.py"]
 CMD ["serve"]
 
 # Define healthcheck
-HEALTHCHECK CMD curl --fail http://localhost:8080/ping || exit 1   
+HEALTHCHECK CMD curl --fail http://localhost:8080/ping || exit 1
+
+# Add and set a non-root user. Issue with sagemaker inference with non-root users linked here- https://github.com/aws/sagemaker-inference-toolkit/issues/72. Please comment the lines below until linked issue is resolved.
+RUN useradd -m nonroot 
+USER nonroot
