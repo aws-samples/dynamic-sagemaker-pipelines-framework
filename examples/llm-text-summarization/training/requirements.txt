@@ -1,5 +1,5 @@
 # sagemaker estimators requires training.py and requirement in strict root folder, not 
-torch==2.0.1
+torch==2.2.0
 transformers
 datasets
 peft==0.4.0
